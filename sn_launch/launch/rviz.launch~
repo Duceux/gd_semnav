@@ -1,0 +1,6 @@
+<launch>
+
+  <!-- RVIZ -->
+  <node name="rviz_1" pkg="rviz" type="rviz" args="-d $(find sn_launch)/param/detector.rviz"/>
+
+</launch>
