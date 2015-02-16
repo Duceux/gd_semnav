@@ -1,10 +1,21 @@
 <launch>
-
 	<include file="$(find sn_launch)/launch/hector.launch" />
 	<include file="$(find sn_launch)/launch/rviz.launch" />
 	
-	<node name="laser_segmentation" pkg="sn_segmentation" type="laser_segmentation" output="screen">
-    	<param name="distance" type="double" value="0.5" />
+	<node name="segmentation" pkg="sn_segmentation" type="laser_segmentation" output="screen">
+	    	<param name="distance" type="double" value="0.5" />
   	</node>
 
+	<node name="transformer" pkg="sn_transform" type="detection_transformer_node" output="screen">
+	    <param name="input" type="string" value="/segmentation/detections" />
+	    <param name="ouput" type="string" value="detections" />
+	    <param name="target_frame" type="string" value="/odom" />
+	    <param name="timeout" type="double" value="0.5" />
+	</node>
+
+	<node name="tracking" pkg="sn_tracking" type="tracking_node" output="screen">
+	    <param name="input" type="string" value="/transformer/detections" />
+	    <param name="threshold" type="double" value="0.2" />
+	    <param name="time_threshold" type="double" value="0.5" />
+	</node>
 </launch>
