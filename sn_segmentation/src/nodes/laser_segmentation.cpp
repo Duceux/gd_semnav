@@ -16,6 +16,23 @@ struct LaserSegmentation{
 
 };
 
+geometry_msgs::Point32 operator +(const geometry_msgs::Point32& lhs, const geometry_msgs::Point32& rhs){
+    geometry_msgs::Point32 res;
+    res.x = lhs.x+rhs.x;
+    res.y = lhs.y+rhs.y;
+    res.z = lhs.z+rhs.z;
+    return res;
+}
+
+template<typename T>
+geometry_msgs::Point32 operator /(const geometry_msgs::Point32& lhs,  T rhs){
+    geometry_msgs::Point32 res;
+    res.x = lhs.x/rhs;
+    res.y = lhs.y/rhs;
+    res.z = lhs.z/rhs;
+    return res;
+}
+
 void LaserSegmentation::callback(const sensor_msgs::LaserScanConstPtr &input){
   Eigen::MatrixXd pair_pts(input->ranges.size()-1, 2);
   Eigen::MatrixXd pts(input->ranges.size(), 2);
@@ -143,6 +160,11 @@ void LaserSegmentation::callback(const sensor_msgs::LaserScanConstPtr &input){
       det.points.push_back(pt);
       ++i;
     }
+    //compute center
+    for(auto& pt: det.points)
+        det.center=det.center+pt;
+    det.center=det.center/det.points.size();
+    det.header = input->header;
     if(det.points.size() > 0)
       res->detections.push_back(det);
   }

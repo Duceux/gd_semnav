@@ -7,6 +7,7 @@ project(sn_segmentation)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   cmake_modules
+  sn_msgs
 )
 
 ## System dependencies are found with CMake's conventions
