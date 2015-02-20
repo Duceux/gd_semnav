@@ -11,11 +11,15 @@ find_package(catkin REQUIRED COMPONENTS
     cv_bridge
     sn_geometry
     sn_features
+    pcl_conversions
+    pcl_ros
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(PCL REQUIRED COMPONENTS
+  common
+)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -99,6 +103,7 @@ add_definitions(-std=c++11 -g)
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -111,7 +116,7 @@ file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
     add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog} ${catkin_LIBRARIES})
+    target_link_libraries(${prog} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library
