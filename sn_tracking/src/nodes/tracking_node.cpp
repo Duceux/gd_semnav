@@ -5,7 +5,6 @@
 #include <sn_msgs/TrackerArray.h>
 #include <sn_geometry/sn_geometry.h>
 
-
 struct Tracking{
     ros::Publisher mDebugPub;
     ros::Publisher mTrackerPub;
@@ -27,7 +26,6 @@ sn_msgs::Tracker Tracking::create_tracker(const sn_msgs::Detection& det){
     sn_msgs::Tracker res;
     res.detections.push_back(det);
     res.ended = false;
-    res.header = det.header;
     res.uid = ros::Time::now();
     res.header = det.header;
     return res;
@@ -73,7 +71,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
     // erase those that haven´t been updated
     for(uint i=0; i<mTrackers.trackers.size(); ++i){
         ros::Duration duration = mTrackers.header.stamp - mTrackers.trackers[i].header.stamp;
-        if(duration.toSec() > mTimeThreshold){
+        if(duration.toSec() > mTimeThreshold && mTrackers.trackers[i].ended){
             mTrackerPub2.publish(mTrackers.trackers[i]);
             mTrackers.trackers.erase(mTrackers.trackers.begin()+i);
             --i;

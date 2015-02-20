@@ -9,6 +9,7 @@ class PolarHistogram
 {
 
 public:
+    PolarHistogram() = default;
     PolarHistogram(double size_bin_theta, double size_bin_rho);
 
     void add(point_t const& pt);
@@ -19,6 +20,8 @@ public:
     void l2_normalize();
     void inf_normalize();
     void print();
+
+    std::vector<double> get(){return data_;}
 
 private:
     std::vector<double> data_;

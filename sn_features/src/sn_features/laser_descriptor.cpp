@@ -1,5 +1,6 @@
 #include <sn_features/laser_descriptor.h>
 #include <sn_features/histogram.h>
+#include <sn_features/polar_histogram.h>
 
 namespace sn {
 #define PSEUDOZERO 0.0001
@@ -123,5 +124,21 @@ void smooth(vector_pts_t const& input, vector_pts_t& output, int neigh){
     else
         output = input;
 }
+
+
+std::vector<double> TriangleLaserExtractor::operator ()(vector_pts_t const& data){
+    sn::vector_pts_t resampled, smoothed, downsampled, triangles;
+    sn::up_sampling(data, resampled, sampling_resolution);
+    sn::smooth(resampled, smoothed, smoothing_factor);
+    sn::down_sampling_nb(smoothed, downsampled, downsampling_factor);
+    sn::triangle_points(downsampled, triangles);
+    sn::PolarHistogram descriptor(theta_bin_size, rho_bin_size);
+    for(auto p: triangles)
+        descriptor.add(p);
+    descriptor.inf_normalize();
+    histogram = descriptor;
+    return descriptor.get();
+}
+
 
 }
