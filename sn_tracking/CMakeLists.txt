@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sn_msgs
   cmake_modules
+  sn_geometry
 
 )
 

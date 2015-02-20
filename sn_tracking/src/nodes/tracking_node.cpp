@@ -3,6 +3,8 @@
 #include <eigen3/Eigen/Core>
 #include <visualization_msgs/Marker.h>
 #include <sn_msgs/TrackerArray.h>
+#include <sn_geometry/sn_geometry.h>
+
 
 struct Tracking{
     ros::Publisher mDebugPub;
@@ -31,19 +33,6 @@ sn_msgs::Tracker Tracking::create_tracker(const sn_msgs::Detection& det){
     return res;
 }
 
-geometry_msgs::Point32 operator -(const geometry_msgs::Point32& lhs, const geometry_msgs::Point32& rhs){
-    geometry_msgs::Point32 res;
-    res.x = lhs.x-rhs.x;
-    res.y = lhs.y-rhs.y;
-    res.z = lhs.z-rhs.z;
-    return res;
-}
-
-double norm(const geometry_msgs::Point32& pt){
-    return std::sqrt(pt.x*pt.x+pt.y*pt.y+pt.z*pt.z);
-}
-
-
 void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
 
     mTrackers.header = ptr->header;
@@ -59,7 +48,9 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
 
         for(auto& tck: mTrackers.trackers){
             auto& dk = tck.detections.back();
-            double distance = norm(dk.center-det.center);
+            sn::point_t center1 = sn::compute_center(dk.points);
+            sn::point_t center2 = sn::compute_center(det.points);
+            double distance = sn::l2_norm(center1-center2);
             if(distance < mindist && distance<mThreshold){
                 arg_min=&tck;
                 mindist = distance;
@@ -81,11 +72,12 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
 
     // erase those that haven´t been updated
     for(uint i=0; i<mTrackers.trackers.size(); ++i){
-      ros::Duration duration = mTrackers.header.stamp - mTrackers.trackers[i].header.stamp;
-      if(duration.toSec() > mTimeThreshold){
-        mTrackers.trackers.erase(mTrackers.trackers.begin()+i);
-        --i;
-      }
+        ros::Duration duration = mTrackers.header.stamp - mTrackers.trackers[i].header.stamp;
+        if(duration.toSec() > mTimeThreshold){
+            mTrackerPub2.publish(mTrackers.trackers[i]);
+            mTrackers.trackers.erase(mTrackers.trackers.begin()+i);
+            --i;
+        }
     }
 
     if(mDebugPub.getNumSubscribers() == 0)
@@ -96,9 +88,10 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         visualization_msgs::Marker marker;
         marker.type = visualization_msgs::Marker::CYLINDER;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.pose.position.x = det.center.x;
-        marker.pose.position.y = det.center.y;
-        marker.pose.position.z = -0.5;
+        auto center = sn::compute_center(det.points);
+        marker.pose.position.x = center.x;
+        marker.pose.position.y = center.y;
+        marker.pose.position.z = center.z;
         marker.pose.orientation.x = 0.0;
         marker.pose.orientation.y = 0.0;
         marker.pose.orientation.z = 0.0;
@@ -130,9 +123,10 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         visualization_msgs::Marker marker;
         marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
         marker.action = visualization_msgs::Marker::ADD;
-        marker.pose.position.x = det.center.x;
-        marker.pose.position.y = det.center.y;
-        marker.pose.position.z = 1.0;
+        auto center = sn::compute_center(det.points);
+        marker.pose.position.x = center.x;
+        marker.pose.position.y = center.y;
+        marker.pose.position.z = center.z;
         auto label = tck.uid;
         marker.scale.z = 0.4;
         marker.color.r = 0;

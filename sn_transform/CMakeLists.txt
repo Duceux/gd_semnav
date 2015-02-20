@@ -5,10 +5,11 @@ project(sn_transform)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  tf
-  sn_msgs
-  cmake_modules
+    roscpp
+    tf
+    sn_msgs
+    cmake_modules
+    sn_geometry
 )
 
 ## System dependencies are found with CMake's conventions
@@ -110,7 +111,7 @@ file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
     add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog}  ${catkin_LIBRARIES})
+    target_link_libraries(${prog} ${catkin_LIBRARIES})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library

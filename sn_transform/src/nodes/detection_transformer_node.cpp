@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <tf/transform_listener.h>
 #include <sn_msgs/DetectionArray.h>
+#include <sn_geometry/transform.h>
 
 struct Transformer{
 
@@ -26,17 +27,8 @@ struct Transformer{
 
         input->header.frame_id = target;
         for(auto& lsd: input->detections){
-            auto res =  transform*tf::Vector3(lsd.center.x, lsd.center.y, lsd.center.z);
-            lsd.center.x = res[0];
-            lsd.center.y = res[1];
-            lsd.center.z = res[2];
             lsd.robot = transformPose2D(transform, lsd.robot);
-            for(auto& pt: lsd.points){
-                auto res =  transform*tf::Vector3(pt.x, pt.y, pt.z);
-                pt.x = res[0];
-                pt.y = res[1];
-                pt.z = res[2];
-            }
+            lsd.points = sn::transform(lsd.points, transform);
         }
 
         publisher.publish(input);
