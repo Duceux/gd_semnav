@@ -2,6 +2,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <eigen3/Eigen/Core>
 #include <sn_msgs/DetectionArray.h>
+#include <sn_geometry/sn_geometry.h>
 
 struct LaserSegmentation{
   ros::Subscriber scanSub;
@@ -57,7 +58,7 @@ void LaserSegmentation::callback(const sensor_msgs::LaserScanConstPtr &input){
   output->ranges[0] = input->ranges[0];
   output->ranges[output->ranges.size()-1] = input->ranges[input->ranges.size()-1];
 
-  std::vector<std::pair<size_t, size_t>> indexes;
+  std::vector<std::pair<size_t, size_t> > indexes;
   for(size_t i=0; i<output->ranges.size();){
     // look for a zeros
     if(output->ranges[i] == 0.0){
@@ -143,6 +144,7 @@ void LaserSegmentation::callback(const sensor_msgs::LaserScanConstPtr &input){
       ++i;
     }
     det.header = input->header;
+    det.bbox.center = sn::compute_center(det.points);
     if(det.points.size() > 0)
       res->detections.push_back(det);
   }
@@ -158,7 +160,7 @@ int main( int argc, char** argv )
   LaserSegmentation segmentation;
 
   segmentation.scanSub = handle.subscribe("/scan", 100, &LaserSegmentation::callback, &segmentation);
-  segmentation.detectionPub = handle.advertise<sn_msgs::DetectionArray>("detections", 1);
+  segmentation.detectionPub = handle.advertise<sn_msgs::DetectionArray>("/detections", 1);
   segmentation.filteredPub = handle.advertise<sensor_msgs::LaserScan>("detection_scan", 1);
 
   ros::param::param<double>("~distance", segmentation.distance_th, 0.001);

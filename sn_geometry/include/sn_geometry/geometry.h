@@ -2,6 +2,7 @@
 #define GEOMETRY_H
 
 #include <sn_geometry/point.h>
+#include <sn_msgs/BoundingBox.h>
 
 namespace sn {
 

@@ -1,4 +1,9 @@
 #include <sn_geometry/transform.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <tf_conversions/tf_eigen.h>
+#include <pcl/common/transforms.h>
 
 namespace sn {
 
@@ -27,6 +32,24 @@ vector_pts_t transform(const vector_pts_t& pts, const pose_t& tf){
     for(point_t p: pts)
         res.push_back(ominus(tf, p));
     return res;
+}
+
+void transform(const sn_msgs::BoundingBox &in, sn_msgs::BoundingBox &out, const tf::StampedTransform &tf)
+{
+    out.center = transform(in.center, tf);
+    out.min = transform(in.min, tf);
+    out.max = transform(in.max, tf);
+}
+
+void transform(const sensor_msgs::PointCloud2 &in, sensor_msgs::PointCloud2 &out, const tf::StampedTransform &tf)
+{
+    if(in.data.size() == 0)return;
+    pcl::PointCloud<pcl::PointXYZRGB> in_cloud, out_cloud;
+    pcl::fromROSMsg(in, in_cloud);
+    Eigen::Affine3d etf;
+    tf::transformTFToEigen(tf, etf);
+    pcl::transformPointCloud(in_cloud, out_cloud, etf);
+    pcl::toROSMsg(out_cloud, out);
 }
 
 }

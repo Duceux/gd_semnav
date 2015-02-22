@@ -84,7 +84,7 @@ int main( int argc, char** argv )
     catch(const std::exception& e){
         ROS_ERROR("%s", e.what());
     }
-    ROS_INFO("nb detections loaded: %u ", detections.detections.size());
+    ROS_INFO("nb detections loaded: %lu ", detections.detections.size());
 
     for(auto det: detections.detections){
 

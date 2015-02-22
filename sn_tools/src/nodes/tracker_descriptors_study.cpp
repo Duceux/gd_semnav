@@ -58,7 +58,7 @@ int main( int argc, char** argv )
     catch(const std::exception& e){
         ROS_ERROR("%s", e.what());
     }
-    ROS_INFO("nb trackers loaded: %u ", trackers.size());
+    ROS_INFO("nb trackers loaded: %lu ", trackers.size());
 
     sn::TriangleLaserExtractor extractor;
     extractor.sampling_resolution = 0.001;

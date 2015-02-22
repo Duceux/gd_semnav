@@ -8,11 +8,18 @@ find_package(catkin REQUIRED COMPONENTS
     roscpp
     geometry_msgs
     tf
+    tf_conversions
+    pcl_ros
+    sensor_msgs
+    cmake_modules
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
+find_package(Eigen REQUIRED)
+find_package(PCL REQUIRED COMPONENTS
+  common
+)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -89,13 +96,14 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-add_definitions(-std=c++11 -g)
+add_definitions(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -108,6 +116,7 @@ add_library(lib${PROJECT_NAME} ${SRC_LIST})
 target_link_libraries(
     lib${PROJECT_NAME}
     ${catkin_LIBRARIES}
+    ${PCL_LIBRARIES}
 )
 
 ## Declare a cpp executable

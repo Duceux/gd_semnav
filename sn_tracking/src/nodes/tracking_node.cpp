@@ -46,8 +46,8 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
 
         for(auto& tck: mTrackers.trackers){
             auto& dk = tck.detections.back();
-            sn::point_t center1 = sn::compute_center(dk.points);
-            sn::point_t center2 = sn::compute_center(det.points);
+            sn::point_t center1 = dk.bbox.center;
+            sn::point_t center2 = det.bbox.center;
             double distance = sn::l2_norm(center1-center2);
             if(distance < mindist && distance<mThreshold){
                 arg_min=&tck;
@@ -86,7 +86,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         visualization_msgs::Marker marker;
         marker.type = visualization_msgs::Marker::CYLINDER;
         marker.action = visualization_msgs::Marker::ADD;
-        auto center = sn::compute_center(det.points);
+        auto center = det.bbox.center;
         marker.pose.position.x = center.x;
         marker.pose.position.y = center.y;
         marker.pose.position.z = center.z;
@@ -121,7 +121,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         visualization_msgs::Marker marker;
         marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
         marker.action = visualization_msgs::Marker::ADD;
-        auto center = sn::compute_center(det.points);
+        auto center = det.bbox.center;
         marker.pose.position.x = center.x;
         marker.pose.position.y = center.y;
         marker.pose.position.z = center.z;

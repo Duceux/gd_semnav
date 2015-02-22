@@ -29,6 +29,9 @@ struct Transformer{
         for(auto& lsd: input->detections){
             lsd.robot = transformPose2D(transform, lsd.robot);
             lsd.points = sn::transform(lsd.points, transform);
+            sn::transform(lsd.bbox, lsd.bbox, transform);
+            sn::transform(lsd.cloud, lsd.cloud, transform);
+            lsd.header.frame_id = target;
         }
 
         publisher.publish(input);
@@ -59,12 +62,12 @@ int main( int argc, char** argv )
     Transformer transformer;
 
     std::string laser_input;
-    ros::param::param<std::string>("~input", laser_input, "/laser_segmentation/detections");
-    transformer.subscriber = handle.subscribe(laser_input, 1, &Transformer::scanCallback, &transformer);
+    ros::param::param<std::string>("~input", laser_input, "/detections");
+    transformer.subscriber = handle.subscribe(laser_input, 10, &Transformer::scanCallback, &transformer);
 
     std::string output;
     ros::param::param<std::string>("~ouput", output, "/transformed"+laser_input);
-    transformer.publisher = handle.advertise<sn_msgs::DetectionArray>(output, 1);
+    transformer.publisher = handle.advertise<sn_msgs::DetectionArray>(output, 10);
 
     ros::param::param<std::string>("~target_frame", transformer.target, "odom");
 

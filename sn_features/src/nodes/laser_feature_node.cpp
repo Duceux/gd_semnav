@@ -2,11 +2,6 @@
 #include <sn_msgs/DetectionArray.h>
 
 struct Extractor{
-
-    void supsampling(const sn_msgs::Detection& input,
-                     sn_msgs::Detection& output,
-                     double resolution);
-
     void callback(sn_msgs::DetectionArrayPtr detections);
 
 };

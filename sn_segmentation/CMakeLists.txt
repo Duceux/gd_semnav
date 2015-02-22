@@ -8,11 +8,24 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   cmake_modules
   sn_msgs
+  pcl_conversions
+  pcl_ros
+  cv_bridge
+  sensor_msgs
+  std_srvs
+  common_msgs_srvs
+  sn_geometry
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Eigen REQUIRED)
+find_package(PCL REQUIRED COMPONENTS
+  common
+  filters
+  segmentation
+  sample_consensus
+)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -89,13 +102,13 @@ catkin_package(
 ###########
 ## Build ##
 ###########
-add_definitions(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -108,7 +121,7 @@ file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
     add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog} ${catkin_LIBRARIES})
+    target_link_libraries(${prog} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library
