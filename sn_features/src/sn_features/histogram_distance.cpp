@@ -5,21 +5,27 @@ namespace sn{
 
 #define PSEUDOZERO 0.0000001
 
-double euclidean_distance(const feature_t &first, const feature_t &last)
+double euclidean_distance(feature_t first, feature_t last)
 {
-    auto min_size = std::min(first.size(), last.size());
+    auto max_size = std::max(first.size(), last.size());
     double accumulator = 0.;
-    for (unsigned int i = 0; i < min_size; i++){
+    first.resize(max_size, 0.0);
+    last.resize(max_size, 0.0);
+    for (unsigned int i = 0; i < max_size; i++)
+    {
         accumulator += (first[i] - last[i])*(first[i] - last[i]);
     }
     return std::sqrt(accumulator * 0.5);
 }
 
-double chi2_distance(const feature_t &first, const feature_t &last)
+double chi2_distance(feature_t first, feature_t last)
 {
-    auto min_size = std::min(first.size(), last.size());
+    auto max_size = std::max(first.size(), last.size());
     double accumulator = 0.;
-    for (unsigned int i = 0; i < min_size; i++){
+    first.resize(max_size, 0.0);
+    last.resize(max_size, 0.0);
+    for (unsigned int i = 0; i < max_size; i++)
+    {
         double p = last[i] == 0 ? PSEUDOZERO : last[i];
         double q = first[i] == 0 ? PSEUDOZERO : first[i];
         accumulator += (q - p)*(q - p)/q;
@@ -27,11 +33,14 @@ double chi2_distance(const feature_t &first, const feature_t &last)
     return accumulator;
 }
 
-double symmetric_chi2_distance(const feature_t &first, const feature_t &last)
+double symmetric_chi2_distance(feature_t first, feature_t last)
 {
-    auto min_size = std::min(first.size(), last.size());
+    auto max_size = std::max(first.size(), last.size());
     double accumulator = 0.;
-    for (unsigned int i = 0; i < min_size; i++){
+    first.resize(max_size, 0.0);
+    last.resize(max_size, 0.0);
+    for (unsigned int i = 0; i < max_size; i++)
+    {
         double p = last[i] == 0 ? PSEUDOZERO : last[i];
         double q = first[i] == 0 ? PSEUDOZERO : first[i];
         accumulator += (q - p)*(q - p)/(q + p);

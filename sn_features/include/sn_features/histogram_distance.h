@@ -7,11 +7,11 @@ namespace sn {
 
 typedef std::vector<double> feature_t;
 
-double euclidean_distance(feature_t const& l, feature_t const& r);
+double euclidean_distance(feature_t l, feature_t r);
 
-double chi2_distance(feature_t const& l, feature_t const& r);
+double chi2_distance(feature_t l, feature_t r);
 
-double symmetric_chi2_distance(feature_t const& l, feature_t const& r);
+double symmetric_chi2_distance(feature_t l, feature_t r);
 
 double batthacharyya_distance(feature_t const& l, feature_t const& r);
 
