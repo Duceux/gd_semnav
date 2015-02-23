@@ -89,7 +89,7 @@ int main( int argc, char** argv )
     extractor.sampling_resolution = 0.001;
     extractor.smoothing_factor = 50;
     extractor.downsampling_factor = 50;
-    extractor.theta_bin_size = M_PI/12.0;
+    extractor.theta_bin_size = M_PI*2.0/12.0;
     extractor.rho_bin_size = 0.1;
 
     VSeq vseq;
@@ -130,13 +130,13 @@ int main( int argc, char** argv )
                 des.tracker = seq.tracker;
                 des.timestamp = det.header.stamp;
                 des.robot = det.robot;
-                seq.data.push_back(des);
+                seq.descriptors.push_back(des);
             }
 
 
         }
         vseq.push_back(seq);
-        std::cout << "added: " << seq.name << " " << seq.data.size() << std::endl;
+        std::cout << "added: " << seq.name << " " << seq.descriptors.size() << std::endl;
 
     }
 

@@ -1,0 +1,3 @@
+tbgr_publisher_node: { str_feature_type: "tbgr",
+                       int_feature_vector_size: 16
+                       }

@@ -8,7 +8,8 @@ namespace sn {
 void up_sampling(vector_pts_t const& input, vector_pts_t& output, double resolution){
     output.clear();
     output.reserve(input.size()*10);
-    for(uint i=0; i<input.size()-1;++i){
+    int size = input.size()-1;
+    for(int i=0; i<size;++i){
         point_t p = input[i+1]-input[i];
         int nb = std::floor(l2_norm(p)/resolution);
         p = p/l2_norm(p);
@@ -34,10 +35,10 @@ void down_sampling_nb(vector_pts_t const& input, vector_pts_t& output, int nb)
 {
     output.clear();
     output.reserve(nb);
-    int step = input.size()/nb;
-    if(step==0)step=1;
+    int step = std::ceil(input.size()/(double)nb);
     for(int i=0; i<input.size(); i+=step)
         output.push_back(input[i]);
+    assert(output.size() <= nb);
 }
 
 
@@ -135,7 +136,8 @@ std::vector<double> TriangleLaserExtractor::operator ()(vector_pts_t const& data
     sn::PolarHistogram descriptor(theta_bin_size, rho_bin_size);
     for(auto p: triangles)
         descriptor.add(p);
-    descriptor.inf_normalize();
+//    descriptor.l1_normalize();
+    descriptor.normalize(triangles.size());
     histogram = descriptor;
     return descriptor.get();
 }

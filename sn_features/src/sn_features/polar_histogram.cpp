@@ -85,6 +85,7 @@ void PolarHistogram::l1_normalize()
     int total = 0;
     for(double d: data_)
         total+=d;
+    total*=0.5;
     for(int i=0; i<data_.size(); ++i)
         data_[i]/=total;
 }
@@ -106,6 +107,12 @@ void PolarHistogram::inf_normalize()
         total=std::max(total,d);
     for(int i=0; i<data_.size(); ++i)
         data_[i]/=total;
+}
+
+void PolarHistogram::normalize(double norm)
+{
+    for(int i=0; i<data_.size(); ++i)
+        data_[i]/=norm;
 }
 
 void PolarHistogram::print()

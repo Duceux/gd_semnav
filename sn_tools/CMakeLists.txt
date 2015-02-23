@@ -13,6 +13,9 @@ find_package(catkin REQUIRED COMPONENTS
     sn_features
     pcl_conversions
     pcl_ros
+    sn_dictionary
+    sn_models
+    visualization_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -100,23 +103,30 @@ add_definitions(-std=c++11 -g)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(sn_tools
-#   src/${PROJECT_NAME}/sn_tools.cpp
-# )
+file(
+        GLOB_RECURSE
+        SRC_LIST
+        src/${PROJECT_NAME}/* include/${PROJECT_NAME}/*
+)
+add_library(lib${PROJECT_NAME} ${SRC_LIST})
+target_link_libraries(
+    lib${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+)
 
 ## Declare nodes
 file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
     add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+    target_link_libraries(${prog} lib${PROJECT_NAME} ${PCL_LIBRARIES})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library

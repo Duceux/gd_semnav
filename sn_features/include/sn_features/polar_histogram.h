@@ -19,6 +19,7 @@ public:
     void l1_normalize();
     void l2_normalize();
     void inf_normalize();
+    void normalize(double norm);
     void print();
 
     std::vector<double> get(){return data_;}

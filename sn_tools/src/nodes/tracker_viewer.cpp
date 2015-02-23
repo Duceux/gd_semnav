@@ -36,7 +36,7 @@ void load(const std::string& filename, TrackersSet& trackers)
             sn_msgs::TrackerPtr g = m.instantiate<sn_msgs::Tracker>();
             if (g != NULL){
                 trackers.insert(g);
-                if(g->name.size() != 0)
+                if(g->name.size() > 0)
                     (*trackers.find(g))->name = g->name;
             }
         }
@@ -56,6 +56,7 @@ void save(const std::string& filename, TrackersSet const& trackers)
     long unsigned int total = 0;
     for(auto tck: trackers){
         try{
+            if(tck->name.size()==0)continue;
             bag.write("/tracking/ended_tracker", ros::Time::now(), *tck);
             total++;
         }catch(const std::exception& e){
@@ -108,11 +109,14 @@ int main( int argc, char** argv )
             continue;
         }
         */
-        if(tk->detections.size() < 150){
+
+        if(tk->detections.size() < 150
+                ){
             std::cout << "Erasing: " << " " << tk->uid << std::endl;
             it = trackers.erase(it);
             continue;
         }
+
         bool has_laser = false;
         bool has_kinect = false;
         for(auto det: tk->detections){

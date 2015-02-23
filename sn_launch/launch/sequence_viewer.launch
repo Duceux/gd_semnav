@@ -1,0 +1,4 @@
+<launch>
+  <node name="sequence_viewer" pkg="sn_tools" type="sequence_viewer" output="screen"/>
+  <node name="rviz_1" pkg="rviz" type="rviz" args="-d $(find sn_launch)/param/tracker_viewer.rviz"/>
+</launch>

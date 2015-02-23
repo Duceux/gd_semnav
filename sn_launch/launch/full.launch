@@ -23,7 +23,7 @@
 
 	<node name="tracking" pkg="sn_tracking" type="tracking_node" output="screen">
 	    <param name="input" type="string" value="/transformer/detections" />
-	    <param name="threshold" type="double" value="0.2" />
+	    <param name="threshold" type="double" value="0.5" />
 	    <param name="time_threshold" type="double" value="1.0" />
 	</node>
 </launch>

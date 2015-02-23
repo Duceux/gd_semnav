@@ -1,0 +1,4 @@
+pfh_publisher_node: { nbrPointsPairInHist: 10000,
+                      nbrBinsAngles: 5,
+                      nbrBinsDist: 5
+                      }

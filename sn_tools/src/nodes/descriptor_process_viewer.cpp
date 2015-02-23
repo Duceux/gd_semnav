@@ -60,17 +60,14 @@ int main( int argc, char** argv )
     ros::init(argc, argv, "tool");
     ros::NodeHandle handle(std::string("~"));
 
+
     std::string filename = "/home/robotic/Desktop/datasets/detections/process.bag";
     sn_msgs::DetectionArray detections;
 
     rosbag::Bag bag;
     try{
         bag.open(filename, rosbag::bagmode::Read);
-        std::vector<std::string> topics;
-        topics.push_back(std::string("/transformer/detections"));
-
-        rosbag::View view(bag, rosbag::TopicQuery(topics));
-
+        rosbag::View view(bag);
         for(auto m: view){
             boost::shared_ptr<sn_msgs::DetectionArray> g = m.instantiate<sn_msgs::DetectionArray>();
             if (g != NULL){

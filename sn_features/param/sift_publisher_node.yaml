@@ -1,0 +1,3 @@
+sift_publisher_node: { str_feature_type: "bow_sift",
+                       str_vocabulary_file_path: "sift_voca_classic_voc100.txt"
+                       }
