@@ -93,7 +93,7 @@ find_package( OpenCV REQUIRED )
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lib${PROJECT_NAME}
-#  CATKIN_DEPENDS roscpp
+#  CATKIN_DEPENDS roscpp sn_geometry cv_bridge pcl_conversions pcl_ros sensor_msgs sn_msgs std_srvs
 #  DEPENDS system_lib
 )
 

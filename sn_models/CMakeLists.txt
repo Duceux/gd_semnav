@@ -5,8 +5,9 @@ project(sn_models)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  roscpp
+    roscpp
     sn_dictionary
+    sn_graph
 )
 
 ## System dependencies are found with CMake's conventions
@@ -81,14 +82,14 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lib${PROJECT_NAME}
-#  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp sn_graph sn_dictionary
 #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
-add_definitions(-std=c++11)
+add_definitions(-std=c++11 -g)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations

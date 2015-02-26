@@ -110,8 +110,13 @@ int main( int argc, char** argv )
         }
         */
 
-        if(tk->detections.size() < 150
-                ){
+        if(sn::l2_norm(tk->detections.front().robot-tk->detections.back().robot) < 1.0){
+          std::cout << "Erasing: " << " " << tk->uid << std::endl;
+          it = trackers.erase(it);
+          continue;
+        }
+
+        if(tk->detections.size() < 150){
             std::cout << "Erasing: " << " " << tk->uid << std::endl;
             it = trackers.erase(it);
             continue;

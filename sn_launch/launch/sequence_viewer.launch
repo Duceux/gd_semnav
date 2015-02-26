@@ -1,4 +1,7 @@
 <launch>
-  <node name="sequence_viewer" pkg="sn_tools" type="sequence_viewer" output="screen"/>
+  <arg name="extractor_params" default="$(find sn_features)/param/params.yaml"/>
+  <rosparam file="$(arg extractor_params)" command="load" />
+
+  <node name="sequence_viewer" pkg="sn_tools" type="sequence_viewer" output="screen" launch-prefix="gdb -ex run --args"/>
   <node name="rviz_1" pkg="rviz" type="rviz" args="-d $(find sn_launch)/param/tracker_viewer.rviz"/>
 </launch>

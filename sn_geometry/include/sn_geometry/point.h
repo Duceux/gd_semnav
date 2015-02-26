@@ -37,4 +37,8 @@ sn::point_t operator -(sn::point_t const& a);
 sn::point_t& operator +=(sn::point_t& a, sn::point_t const& b);
 sn::point_t& operator /=(sn::point_t& a, double b);
 
+
+sn::point_t operator -(sn::pose_t const& a, sn::pose_t const& b);
+
+
 #endif // POINT_H

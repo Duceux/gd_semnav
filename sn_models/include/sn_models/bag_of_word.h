@@ -5,25 +5,6 @@
 #include <unordered_map>
 #include <sn_msgs/DescriptorSequence.h>
 
-template<typename T>
-void
-hash_combine(std::size_t &seed, T const &key) {
-  std::hash<T> hasher;
-  seed ^= hasher(key) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-}
-
-namespace std {
-  template<>
-  struct hash<sn::Word> {
-    std::size_t operator()(sn::Word const &p) const {
-      std::size_t seed(0);
-      ::hash_combine(seed, p.label);
-      ::hash_combine(seed, p.type);
-      return seed;
-    }
-  };
-}
-
 
 namespace sn {
 

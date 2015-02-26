@@ -112,7 +112,7 @@ void compute_centered_oriented(vector_pts_t const& input, vector_pts_t& output)
 void smooth(vector_pts_t const& input, vector_pts_t& output, int neigh){
     output.clear();
     output.reserve(input.size());
-    if(input.size() > neigh)
+    if(input.size() > 2*neigh+1)
         for(int i=neigh; i<input.size()-neigh; ++i){
             point_t center = create(0,0,0);
             for(int j=-neigh; j<=neigh; ++j)
@@ -136,10 +136,31 @@ std::vector<double> TriangleLaserExtractor::operator ()(vector_pts_t const& data
     sn::PolarHistogram descriptor(theta_bin_size, rho_bin_size);
     for(auto p: triangles)
         descriptor.add(p);
-//    descriptor.l1_normalize();
+    //    descriptor.l1_normalize();
     descriptor.normalize(triangles.size());
     histogram = descriptor;
-    return descriptor.get();
+    return descriptor.get_feature();
+}
+
+descriptor_t TriangleLaserExtractor::operator ()(const detection_t &data)
+{
+    descriptor_t res = Extractor::operator ()(data);
+    res.data = (*this)(data.points);
+    return res;
+}
+
+void TriangleLaserExtractor::set_params(const std::map<std::string, std::string> &params)
+{
+    try {
+        type = params.at("type");
+        sampling_resolution = boost::lexical_cast<double>(params.at("sampling_resolution"));
+        smoothing_factor = boost::lexical_cast<int>(params.at("smoothing_factor"));
+        downsampling_factor = boost::lexical_cast<int>(params.at("downsampling_factor"));
+        theta_bin_size = M_PI*2.0/boost::lexical_cast<double>(params.at("theta_bin_nb"));
+        rho_bin_size = boost::lexical_cast<double>(params.at("rho_bin_size"));
+    } catch( boost::bad_lexical_cast const& e) {
+        std::cout << e.what() << std::endl;
+    }
 }
 
 

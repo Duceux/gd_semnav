@@ -69,3 +69,9 @@ sn::point_t &operator /=(sn::point_t &a, double b){
 sn::point_t operator -(sn::point_t const& a){
     return sn::create(-a.x, -a.y, -a.z);
 }
+
+
+sn::point_t operator -(const sn::pose_t &a, const sn::pose_t &b)
+{
+  return sn::create(a.x-b.x, a.y-b.y, 0.0);
+}

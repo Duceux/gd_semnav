@@ -78,8 +78,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES sn_graph
+  INCLUDE_DIRS include
+  LIBRARIES lib${PROJECT_NAME}
 #  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
@@ -87,18 +87,20 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+add_definitions(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
-include_directories(
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories(include)
+
 
 ## Declare a cpp library
-# add_library(sn_graph
-#   src/${PROJECT_NAME}/sn_graph.cpp
-# )
+file(
+        GLOB_RECURSE
+        SRC_LIST
+        src/${PROJECT_NAME}/* include/${PROJECT_NAME}/*
+)
+add_library(lib${PROJECT_NAME} ${SRC_LIST})
 
 ## Declare a cpp executable
 # add_executable(sn_graph_node src/sn_graph_node.cpp)
@@ -152,10 +154,10 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_sn_graph.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+ catkin_add_gtest(${PROJECT_NAME}-test test/test_sn_graph.cpp)
+ if(TARGET ${PROJECT_NAME}-test)
+   target_link_libraries(${PROJECT_NAME}-test lib${PROJECT_NAME})
+ endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

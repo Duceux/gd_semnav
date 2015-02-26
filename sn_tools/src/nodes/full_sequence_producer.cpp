@@ -96,8 +96,8 @@ int main( int argc, char** argv )
     for(sn_msgs::TrackerPtr tkr: trackers){
         std::cout << "doing: " << tkr->uid << std::endl;
         Seq seq;
-        seq.tracker = tkr->uid;
-        seq.timestamp = tkr->header.stamp;
+        seq.uid = tkr->uid;
+        seq.header = tkr->header;
         seq.name = tkr->name;
 
         //cloud
@@ -124,12 +124,7 @@ int main( int argc, char** argv )
         //descriptors
         for(sn_msgs::Detection det: tkr->detections){
             if(det.points.size() > 0){
-                Des des;
-                des.type = "laser";
-                des.data = extractor(det.points);
-                des.tracker = seq.tracker;
-                des.timestamp = det.header.stamp;
-                des.robot = det.robot;
+                Des des = extractor(det);
                 seq.descriptors.push_back(des);
             }
 

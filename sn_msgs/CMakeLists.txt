@@ -7,8 +7,6 @@ project(sn_msgs)
 find_package(catkin REQUIRED COMPONENTS
   message_generation
   sensor_msgs
-  geometry_msgs
-  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -73,7 +71,7 @@ endforeach( appsourcefile ${MSG_LIST} )
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
    DEPENDENCIES
-   sensor_msgs std_msgs geometry_msgs # Or other packages containing msgs
+   sensor_msgs # Or other packages containing msgs
 )
 
 ###################################
@@ -88,7 +86,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES sn_msgs
-#  CATKIN_DEPENDS other_catkin_pkg
+  CATKIN_DEPENDS sensor_msgs
 #  DEPENDS system_lib
 )
 

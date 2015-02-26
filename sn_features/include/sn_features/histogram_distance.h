@@ -1,11 +1,9 @@
 #ifndef HISTOGRAM_DISTANCE_H
 #define HISTOGRAM_DISTANCE_H
 
-#include <vector>
+#include <sn_features/types.h>
 
 namespace sn {
-
-typedef std::vector<double> feature_t;
 
 double euclidean_distance(feature_t l, feature_t r);
 

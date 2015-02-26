@@ -3,7 +3,7 @@
 
 namespace sn{
 
-int FastGetter::operator ()(const std::vector<double> &des, std::vector<std::vector<double> > &words,
+int FastGetter::operator ()(const std::vector<double> &des, std::vector<std::vector<double>> &words,
                              double th, Distance func)
 {
     for(int i=0; i<words.size(); ++i)

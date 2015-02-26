@@ -140,6 +140,31 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         marker.id = label.toNSec();
         mDebugPub.publish(marker);
     }
+    for(auto& tck: mTrackers.trackers){
+        auto& det = tck.detections.back();
+        visualization_msgs::Marker marker;
+        marker.type = visualization_msgs::Marker::ARROW;
+        marker.action = visualization_msgs::Marker::ADD;
+        auto center = det.bbox.center;
+        sn::point_t robot = sn::create(det.robot.x, det.robot.y, center.z);
+        sn::point_t arrow = center-robot;
+        arrow = arrow*sn::l2_norm(arrow)*1.1;
+        marker.points.push_back(robot);
+        marker.points.push_back(arrow+robot);
+        auto label = tck.uid;
+        marker.scale.x = 0.01;
+        marker.scale.y = 0.0;
+        marker.scale.z = 0.0;
+        marker.color.r = mColors[label][0];
+        marker.color.g = mColors[label][1];
+        marker.color.b = mColors[label][2];
+        marker.color.a = 1.0;
+        marker.lifetime = ros::Duration();
+        marker.header.frame_id = ptr->header.frame_id;
+        marker.ns = "arrow";
+        marker.id = ros::Time::now().toNSec()+label.toNSec();
+        mDebugPub.publish(marker);
+    }
 
 }
 

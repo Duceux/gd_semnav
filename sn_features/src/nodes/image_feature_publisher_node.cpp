@@ -39,7 +39,7 @@ private:
 };
 
 void ImageFeaturePublisherNode::toDescriptorMsg(cv_bridge::CvImagePtr const& imgptr, sn_msgs::Descriptor& dess){
-    dess.timestamp = imgptr->header.stamp;
+    dess.header = imgptr->header;
     //TODO
 }
 

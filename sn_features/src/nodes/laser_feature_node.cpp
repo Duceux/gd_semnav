@@ -1,20 +1,6 @@
 #include <ros/ros.h>
 #include <sn_msgs/DetectionArray.h>
 
-struct Extractor{
-    void callback(sn_msgs::DetectionArrayPtr detections);
-
-};
-
-
-void Extractor::callback(sn_msgs::DetectionArrayPtr detections){
-    for(auto& det: detections->detections){
-
-
-
-    }
-
-}
 
 int main( int argc, char** argv )
 {

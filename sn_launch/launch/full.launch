@@ -17,7 +17,7 @@
 	<node name="transformer" pkg="sn_transform" type="detection_transformer_node" output="screen">
 	    <param name="input" type="string" value="/detections" />
 	    <param name="ouput" type="string" value="detections" />
-	    <param name="target_frame" type="string" value="/map" />
+	    <param name="target_frame" type="string" value="/odom" />
 	    <param name="timeout" type="double" value="0.5" />
 	</node>
 

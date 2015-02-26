@@ -19,6 +19,8 @@
 #include <visualization_msgs/MarkerArray.h>
 #include <sn_dictionary/dico.h>
 #include <sn_features/histogram_distance.h>
+#include <sn_features/pfh_extractor.h>
+#include <sn_features/image_extractor.h>
 
 namespace fs = boost::filesystem;
 
@@ -80,29 +82,73 @@ void save(const std::string& filename, VSeq const& trackers)
 
 int main( int argc, char** argv )
 {
-    ros::init(argc, argv, "tool");
+    ros::init(argc, argv, "sequence_viewer");
     ros::NodeHandle handle(std::string("~"));
 
 
     TrackersSet trackers;
     load("/home/robotic/Desktop/datasets/trackers/all.bag", trackers);
 
+    std::map<std::string, std::string> pfh_ex_params;
+    ros::param::get("pfh_ex", pfh_ex_params);
+    for(auto it: pfh_ex_params)
+        std::cout << it.first << " " << it.second << std::endl;
+
+    std::map<std::string, std::string> laser_ex_params;
+    ros::param::get("laser_ex", laser_ex_params);
+    for(auto it: laser_ex_params)
+        std::cout << it.first << " " << it.second << std::endl;
+
+    std::map<std::string, std::string> tbgr_ex_params;
+    ros::param::get("tbgr_ex", tbgr_ex_params);
+    for(auto it: tbgr_ex_params)
+        std::cout << it.first << " " << it.second << std::endl;
+
     std::map<sn::Word, std::array<float, 3>> mColors;
     sn::Dictionary<sn::FastGetter> dicos;
-    dicos.set("laser", 0.2, sn::Distance(sn::symmetric_chi2_distance));
+    dicos.set("laser", 0.1, sn::Distance(sn::symmetric_chi2_distance));
+    dicos.set("pfh", 0.05, sn::Distance(sn::symmetric_chi2_distance));
+    dicos.set("size", 0.01, sn::Distance(sn::euclidean_distance));
+    dicos.set("color", 3.0, sn::Distance(sn::symmetric_chi2_distance));
+    dicos.set("tbgr", 0.1, sn::Distance(sn::symmetric_chi2_distance));
 
-    sn::TriangleLaserExtractor extractor;
-    extractor.sampling_resolution = 0.001;
-    extractor.smoothing_factor = 50;
-    extractor.downsampling_factor = 50;
-    extractor.theta_bin_size = M_PI*2.0/12.0;
-    extractor.rho_bin_size = 0.1;
+    sn::TriangleLaserExtractor::Ptr extractor(new sn::TriangleLaserExtractor);
+    extractor->set_params(laser_ex_params);
+
+    sn::PFHExtractor::Ptr pfh_ex(new sn::PFHExtractor);
+    pfh_ex->set_params(pfh_ex_params);
+
+    sn::SizeExtractor::Ptr size_ex(new sn::SizeExtractor);
+    size_ex->type = "size";
+
+    sn::ColorTriangleExtractor tmp;
+    tmp.type = "color";
+    sn::ColorTriangleExtractor::Ptr color_ex(new sn::ColorTriangleExtractor(tmp));
+
+    sn::ImageDescriptorExtractor::Ptr tbgr_ex(new sn::ImageDescriptorExtractor);
+    tbgr_ex->set_params(tbgr_ex_params);
+
+    std::vector<sn::Extractor::Ptr> extractors;
+    extractors.push_back(extractor);
+    extractors.push_back(pfh_ex);
+    extractors.push_back(size_ex);
+    extractors.push_back(color_ex);
+    extractors.push_back(tbgr_ex);
+
+    std::map<std::string, double> height_map;
+    height_map["laser"] = 0.0;
+    height_map["pfh"] = 0.0;
+    height_map["size"] = 0.02;
+    height_map["color"] = 0.02;
+    height_map["tbgr"] = 0.04;
+
 
     ros::Publisher path_pub = handle.advertise<nav_msgs::Path>("/path",1,true);
     ros::Publisher cloud_pub = handle.advertise<sensor_msgs::PointCloud2>("/laser_cloud",1,true);
     ros::Publisher kinect_pub = handle.advertise<sensor_msgs::PointCloud2>("/kinect_cloud",1,true);
     ros::Publisher poses_pub = handle.advertise<geometry_msgs::PoseArray>("/poses", 1, true);
     ros::Publisher marker_pub = handle.advertise<visualization_msgs::MarkerArray>("/words",1000,true);
+    VSeq vseq;
 
     for(sn_msgs::TrackerPtr tk: trackers){
         nav_msgs::Path path;
@@ -160,24 +206,20 @@ int main( int argc, char** argv )
 
 
         Seq seq;
-        seq.tracker = tk->uid;
-        seq.timestamp = tk->header.stamp;
+        seq.uid = tk->uid;
+        seq.header = tk->header;
         seq.name = tk->name;
         pcl::toROSMsg(ptcld2, seq.cloud);
         seq.cloud.header = tk->header;
-
         //descriptors
         for(sn_msgs::Detection det: tk->detections){
-            if(det.points.size() > 0){
-                Des des;
-                des.type = "laser";
-                des.data = extractor(det.points);
-                des.tracker = seq.tracker;
-                des.timestamp = det.header.stamp;
-                des.robot = det.robot;
-                seq.descriptors.push_back(des);
+            for(sn::Extractor::Ptr ex: extractors){
+                if(ex->is_valid(det)){
+                    seq.descriptors.push_back((*ex)(det));
+                }
             }
         }
+
         //marker
         visualization_msgs::MarkerArray marray;
         for(sn_msgs::Descriptor des: seq.descriptors){
@@ -197,7 +239,7 @@ int main( int argc, char** argv )
             }
             marker.pose.position.x = des.robot.x;
             marker.pose.position.y = des.robot.y;
-            marker.pose.position.z = 0.0;
+            marker.pose.position.z = height_map[des.type];
             marker.scale.x = 0.02;
             marker.scale.y = 0.02;
             marker.scale.z = 0.01;
@@ -208,22 +250,23 @@ int main( int argc, char** argv )
 
             marker.lifetime = ros::Duration();
             marker.header.frame_id = tk->header.frame_id;
-            marker.ns = "cylinder";
+            marker.ns = "all";
             marker.id = marray.markers.size();
             marray.markers.push_back(marker);
         }
         static std::size_t max_size = marray.markers.size();
         max_size = std::max(marray.markers.size(), max_size);
-        for(int i=marray.markers.size(); i<max_size; ++i){
-            visualization_msgs::Marker marker;
-            marker.type = visualization_msgs::Marker::CYLINDER;
-            marker.action = visualization_msgs::Marker::DELETE;
-            marker.lifetime = ros::Duration();
-            marker.header.frame_id = tk->header.frame_id;
-            marker.ns = "cylinder";
-            marker.id = marray.markers.size();
-            marray.markers.push_back(marker);
-        }
+        for(int i=marray.markers.size(); i<max_size; ++i)
+        {
+                visualization_msgs::Marker marker;
+                marker.type = visualization_msgs::Marker::CYLINDER;
+                marker.action = visualization_msgs::Marker::DELETE;
+                marker.lifetime = ros::Duration();
+                marker.header.frame_id = tk->header.frame_id;
+                marker.ns = "all";
+                marker.id = marray.markers.size();
+                marray.markers.push_back(marker);
+            }
 
         marker_pub.publish(marray);
         cloud_pub.publish(cloud);
@@ -231,9 +274,13 @@ int main( int argc, char** argv )
         poses_pub.publish(parray);
         kinect_pub.publish(cloud2);
 
-        std::string mystr;
-        std::cout << "Press enter to continue\n";
-        std::getline (std::cin, mystr);
+//        std::string mystr;
+//        std::cout << "Press enter to continue\n";
+//        std::getline (std::cin, mystr);
+
+        vseq.push_back(seq);
+        save("/home/robotic/Desktop/datasets/sequences/viewer.bag", vseq);
+
     }
 
     return 0;

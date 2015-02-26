@@ -1,9 +1,10 @@
 #ifndef LASER_DESCRIPTOR_H
 #define LASER_DESCRIPTOR_H
 
-#include <sn_geometry/sn_geometry.h>
 #include <sn_msgs/Detection.h>
 #include <sn_features/polar_histogram.h>
+#include <sn_features/types.h>
+#include <sn_features/feature_extractor.h>
 
 namespace sn {
 
@@ -23,7 +24,7 @@ void smooth(vector_pts_t const& input, vector_pts_t& output, int neigh);
 
 void triangle_points(vector_pts_t const& input, vector_pts_t& output);
 
-struct TriangleLaserExtractor{
+struct TriangleLaserExtractor: public Extractor{
     double sampling_resolution;
     int smoothing_factor;
     int downsampling_factor;
@@ -31,8 +32,13 @@ struct TriangleLaserExtractor{
     double rho_bin_size;
     PolarHistogram histogram;
 
-    std::vector<double> operator ()(vector_pts_t const& data);
+    feature_t operator ()(vector_pts_t const& data);
+    descriptor_t operator ()(detection_t const& data);
     PolarHistogram get_histogram(){return histogram;}
+
+    void set_params(std::map<std::string, std::string> const& params);
+    bool is_valid(detection_t const& det)const{return det.points.size()>0;}
+
 };
 
 }
