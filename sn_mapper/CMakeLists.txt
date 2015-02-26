@@ -7,11 +7,21 @@ project(sn_mapper)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   sn_geometry
+  cv_bridge
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package( OpenCV REQUIRED )
 
+#OpenMP
+find_package(OpenMP)
+if(OPENMP_FOUND)
+    message("OPENMP FOUND")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -88,21 +98,35 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+add_definitions(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-# add_library(sn_mapper
-#   src/${PROJECT_NAME}/sn_mapper.cpp
-# )
+file(
+        GLOB_RECURSE
+        SRC_LIST
+        src/${PROJECT_NAME}/* include/${PROJECT_NAME}/*
+)
+add_library(lib${PROJECT_NAME} ${SRC_LIST})
+target_link_libraries(
+    lib${PROJECT_NAME}
+    ${catkin_LIBRARIES}
+    ${OpenCV_LIBS}
+)
 
-## Declare a cpp executable
-# add_executable(sn_mapper_node src/sn_mapper_node.cpp)
+## Declare nodes
+file( GLOB NODES src/nodes/*.cpp )
+foreach( appsourcefile ${NODES} )
+    get_filename_component(prog ${appsourcefile} NAME_WE)
+    add_executable(${PROJECT_NAME}_${prog} ${appsourcefile} )
+    target_link_libraries(${PROJECT_NAME}_${prog} lib${PROJECT_NAME} ${PCL_LIBRARIES})
+endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

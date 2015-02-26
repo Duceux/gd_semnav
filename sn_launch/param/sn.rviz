@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
+        - /Map1
       Splitter Ratio: 0.5
     Tree Height: 775
   - Class: rviz/Selection
@@ -33,10 +34,10 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
-      Enabled: false
+      Enabled: true
       Name: Map
       Topic: /map
-      Value: false
+      Value: true
     - Class: rviz/Axes
       Enabled: true
       Length: 1
@@ -103,15 +104,13 @@ Visualization Manager:
       Use rainbow: true
       Value: false
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /tracking/markers
       Name: Trackers
       Namespaces:
-        arrow: true
-        cylinder: true
-        text: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -170,10 +169,17 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
+    - Arrow Length: 0.3
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: false
+      Name: PoseArray
+      Topic: /localizer/particles
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: odom
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -194,22 +200,22 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 16.2928
+      Distance: 23.5038
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 3.45254
-        Y: 0.664259
-        Z: -0.369526
+        X: 4.60767
+        Y: 0.173159
+        Z: -0.360124
       Name: Current View
       Near Clip Distance: 0.01
-      Pitch: 1.3498
+      Pitch: 1.5698
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 4.10039
+      Yaw: 5.10039
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,7 +1,12 @@
 <launch>
-	<include file="$(find sn_launch)/launch/hector.launch" />
+
 	<include file="$(find sn_launch)/launch/rviz.launch" />
 	
+	<node name="localizer" pkg="sn_mapper" type="sn_mapper_localizernode" output="screen">
+  	</node>
+	<node name="mapper" pkg="sn_mapper" type="sn_mapper_mapper" output="screen">
+  	</node>
+
 	<node name="laser_segmentation" pkg="sn_segmentation" type="laser_segmentation" output="screen">
 	    	<param name="distance" type="double" value="0.5" />
   	</node>
