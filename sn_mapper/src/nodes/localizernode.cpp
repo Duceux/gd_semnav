@@ -80,7 +80,7 @@ void LocalizerNode::scanCallback(LaserPtr scan){
 void LocalizerNode::mapCallback(OGridPtr map){
     sn::Map mymap;
     sn::rosToMap(map, mymap);
-    mymap.computeDistSup();
+    mymap.computeDistSup(120);
     localizer_.init(mymap);
 }
 

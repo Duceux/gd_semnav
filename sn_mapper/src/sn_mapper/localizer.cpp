@@ -49,7 +49,6 @@ int Localizer::process(vector_pts_t &points){
       if(mParticles[i].score <=  mBestP.score)
         mBestP = mParticles[i];
     }
-
   }
   return UPDATE;
 }
@@ -65,9 +64,10 @@ void Localizer::generateUniformParticles(int number){
     cv::Point pp(dx, dy);
     if(!mMap.isValid(pp))
       continue;
+    /*
     if(mMap.at(pp) <= 128)
       continue;
-
+*/
     double dtheta = mRandom.uniform(-M_PI, M_PI);
     point_t p = mMap.toWorld(pp);
     pose_t pose = create_pose(p.x, p.y, dtheta);
@@ -88,11 +88,11 @@ void Localizer::generateParticles(int number, float strength, const Particle& p)
     float dz = mRandom.normal(0, 0.75*strength);
     Particle newp;
     newp.set(oplus(p, create_pose(dx, dy, dz)));
-    cv::Point p = mMap.toMap(newp);
-    if(!mMap.isValid(p)){
+    point_t newpt = create(newp.x, newp.y);
+    if(!mMap.isValid(newpt)){
       continue;
     }
-    if(mMap.at(p) <= 128){
+    if(mMap.at(newpt) <= 127){
       continue;
     }
     mParticles.push_back(newp);
@@ -104,20 +104,19 @@ void Localizer::generateParticles(int number, float strength, const Particle& p)
 void Localizer::scoreParticle(Particle& pl, const vector_pts_t &points){
   pl.fast_score = pl.score = DMAX;
 
-  if(!mMap.isValid(mMap.toMap(pl))){
+  point_t p = create(pl.x, pl.y);
+  if(!mMap.isValid(p)){
     pl.fast_score = pl.score = DMAX;
     return;
   }
-  if(mMap.at(mMap.toMap(pl)) <= 128){
+  if(mMap.at(p) <= 127){
     pl.fast_score = pl.score = DMAX;
     return;
   }
-
   double score = 0.0;
   int count = 0;
   for(uint it = 0; it<points.size(); it+=4, ++count){
-    cv::Point2d projection =  mMap.toMap(project(pl ,points[it]));
-
+    point_t projection = project(pl, points[it]);
     if(mMap.isValid(projection)){
       score += mMap.dist(projection);
     }
@@ -137,9 +136,9 @@ void Localizer::scoreParticle(Particle& pl, const vector_pts_t &points){
   score = 0.0;
 #pragma omp parallel for
   for(uint it = 0; it<points.size(); ++it){
-    cv::Point2d projection =  mMap.toMap(project(pl ,points[it]));
+    point_t projection = project(pl, points[it]);
     if(mMap.isValid(projection) /*&& mMap.dist(projection) < mean*/){
-      score += mMap.dist(projection)+mMap.at(projection)/255.0;
+      score += mMap.dist(projection);
       count++;
     }
   }

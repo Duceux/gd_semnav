@@ -59,7 +59,7 @@ void MapUpdaterNode::scanCallback(LaserPtr scan){
 
   if(mScoreDisp && !mGoodScore)return;
 
-  updateMap(l, robot, 10, 5);
+  updateMap(l, robot, 10, 1);
 
   static int count = 0;
   if(count%5 == 0){
@@ -98,7 +98,7 @@ void MapUpdaterNode::mapCallback(OGridPtr map){
 void MapUpdaterNode::updateMap(const sn::vector_pts_t &points, sn::pose_t &pose, int hit_s, int miss_s){
   mMap.computeDistDiff();
 
-  cv::Point robot =  mMap.toMap(pose);
+  cv::Point robot =  mMap.toMap(pose.x, pose.y);
   bool flag = false;
 #pragma omp parallel for
   for(unsigned int i = 0; i<points.size(); ++i){
@@ -132,7 +132,7 @@ void MapUpdaterNode::scoreScan(const sn::vector_pts_t& points, double& mean, dou
   for(unsigned int i = 0; i<points.size(); i++){
     cv::Point p = mMap.toMap(points[i]);
     if(mMap.isValid(p)){
-      double dist = mMap.dist(p);
+      double dist = mMap.dist(points[i]);
       score += dist;
       square += dist*dist;
       ++count;

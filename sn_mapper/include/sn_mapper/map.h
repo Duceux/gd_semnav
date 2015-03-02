@@ -25,12 +25,15 @@ public:
 
     cv::Point toMap(double x, double y) const;
     cv::Point toMap(const point_t& p) const;
-    cv::Point toMap(const pose_t& p) const;
+    point_t toMapFrame(const point_t& p)const;
 
     point_t toWorld(int px, int py) const;
     point_t toWorld(const cv::Point& p) const;
 
     bool isValid(const cv::Point& p) const;
+    bool isValid(const point_t& p) const{
+      return isValid(toMap(p));
+    }
 
     uchar at(const cv::Point& p) const{
         if(!isValid(p))
@@ -38,13 +41,11 @@ public:
         return grid.at<uchar>(p);
     }
 
-    uchar at(const point_t& p) const{
-        return at(toMap(p));
-    }
-
     uchar& at(const cv::Point& p){
         return grid.at<uchar>(p);
     }
+
+    double at(const point_t& point) const;
 
     void computeDistSup(int threshold=128){
         cv::distanceTransform(grid>=threshold, dist_grid, CV_DIST_L2, 3);
@@ -63,14 +64,7 @@ public:
         cv::distanceTransform(grid<=threshold, dist_grid, CV_DIST_L2, 3);
     }
 
-
-    float dist(const cv::Point& p) const{
-        return dist_grid.at<float>(p);
-    }
-
-    float dist(const point_t& p) const{
-        return dist_grid.at<float>(toMap(p));
-    }
+    float dist(const point_t& point) const;
 
     void rezise(int left, int right, int top, int bottom);
 
@@ -80,6 +74,11 @@ private:
     cv::Point minPoint();
 
     cv::Point maxPoint();
+
+
+    float dist(const cv::Point& p) const{
+        return dist_grid.at<float>(p);
+    }
 
 public:
     double resolution;

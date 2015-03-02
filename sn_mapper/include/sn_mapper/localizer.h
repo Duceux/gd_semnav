@@ -28,7 +28,9 @@ public:
 };
 
 inline std::ostream& operator << (std::ostream& out, const Particle& p){
-    out << "(" << p.x << ", " << p.y << ", " << p.theta << ", " << p.score << ")";
+    out << "(" << p.x << ", " << p.y << ", "
+        << p.theta << ", " << p.fast_score
+        << ", " << p.score <<")";
     return out;
 }
 

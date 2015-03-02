@@ -18,8 +18,12 @@ cv::Point Map::toMap(double px, double py) const{
 cv::Point Map::toMap(const point_t &p) const{
     return toMap(p.x, p.y);
 }
-cv::Point Map::toMap(const pose_t &p) const{
-    return toMap(p.x, p.y);
+
+point_t Map::toMapFrame(const point_t &p) const
+{
+  double x = (p.x-origin.x)/resolution;
+  double y = grid.rows - (p.y-origin.y)/resolution;
+  return create(x, y);
 }
 
 point_t Map::toWorld(int px, int py) const{
@@ -39,6 +43,44 @@ bool Map::isValid(const cv::Point &pt) const{
             pt.y >= grid.rows)
         return false;
     return true;
+}
+
+double Map::at(const point_t &point) const
+{
+  point_t p = toMapFrame(point);
+
+  //bilinear interpolation
+  cv::Point p11(std::floor(p.x), std::floor(p.y));
+  cv::Point p12(std::floor(p.x), std::ceil(p.y));
+  cv::Point p21(std::ceil(p.x), std::floor(p.y));
+  cv::Point p22(std::ceil(p.x), std::ceil(p.y));
+
+  double dist = 0.0;
+  dist += at(p11)*(p22.x - p.x)*(p22.y - p.y);
+  dist += at(p21)*(p.x - p11.x)*(p22.y - p.y);
+  dist += at(p12)*(p22.x - p.x)*(p.y - p11.y);
+  dist += at(p22)*(p.x - p11.x)*(p.y - p11.y);
+  // dist/=1/(x2-x1)(y2-y1) == 1 not necessary
+  return dist;
+}
+
+float Map::dist(const point_t &point) const
+{
+  point_t p = toMapFrame(point);
+
+  //bilinear interpolation
+  cv::Point p11(std::floor(p.x), std::floor(p.y));
+  cv::Point p12(std::floor(p.x), std::ceil(p.y));
+  cv::Point p21(std::ceil(p.x), std::floor(p.y));
+  cv::Point p22(std::ceil(p.x), std::ceil(p.y));
+
+  double dist = 0.0;
+  dist += dist_grid.at<float>(p11)*(p22.x - p.x)*(p22.y - p.y);
+  dist += dist_grid.at<float>(p21)*(p.x - p11.x)*(p22.y - p.y);
+  dist += dist_grid.at<float>(p12)*(p22.x - p.x)*(p.y - p11.y);
+  dist += dist_grid.at<float>(p22)*(p.x - p11.x)*(p.y - p11.y);
+  // dist/=1/(x2-x1)(y2-y1) == 1 not necessary
+  return dist;
 }
 
 void Map::rezise(int left, int right, int top, int bottom){
