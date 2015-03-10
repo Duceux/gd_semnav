@@ -31,8 +31,8 @@ void LocalizerNode::scanCallback(LaserPtr scan){
       return;
     }
 
+    /*
     tf::StampedTransform transform;
-
     try{
       listener_.lookupTransform("map", "odom", scan->header.stamp, transform);
       pose_t odom;
@@ -41,7 +41,7 @@ void LocalizerNode::scanCallback(LaserPtr scan){
     }
     catch (tf::TransformException ex){
     }
-
+*/
 
 //    if(max_score > 0.0)
     {

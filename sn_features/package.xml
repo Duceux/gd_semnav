@@ -41,7 +41,18 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>sn_geometry</build_depend>
+  <build_depend>cv_bridge</build_depend>
+  <build_depend>pcl_conversions</build_depend>
+  <build_depend>pcl_ros</build_depend>
+  <build_depend>sn_msgs</build_depend>
+
   <run_depend>roscpp</run_depend>
+  <run_depend>sn_geometry</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>pcl_conversions</run_depend>
+  <run_depend>pcl_ros</run_depend>
+  <run_depend>sn_msgs</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

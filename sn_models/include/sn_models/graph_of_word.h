@@ -29,6 +29,8 @@ struct GraphOfWord{
     void print()const;
 };
 
+typedef GraphOfWord::Ptr GraphOfWordPtr;
+
 }
 
 #endif // GRAPH_OF_WORD_H

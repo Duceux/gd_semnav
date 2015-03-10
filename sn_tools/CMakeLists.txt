@@ -125,8 +125,8 @@ target_link_libraries(
 file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
-    add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog} lib${PROJECT_NAME} ${PCL_LIBRARIES})
+    add_executable( ${PROJECT_NAME}_${prog} ${appsourcefile} )
+    target_link_libraries(${PROJECT_NAME}_${prog} lib${PROJECT_NAME} ${PCL_LIBRARIES})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library

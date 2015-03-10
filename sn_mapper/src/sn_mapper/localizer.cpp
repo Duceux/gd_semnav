@@ -137,7 +137,7 @@ void Localizer::scoreParticle(Particle& pl, const vector_pts_t &points){
 #pragma omp parallel for
   for(uint it = 0; it<points.size(); ++it){
     point_t projection = project(pl, points[it]);
-    if(mMap.isValid(projection) /*&& mMap.dist(projection) < mean*/){
+    if(mMap.isValid(projection) && mMap.dist(projection) < mean*2.0){
       score += mMap.dist(projection);
       count++;
     }

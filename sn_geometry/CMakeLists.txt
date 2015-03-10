@@ -6,11 +6,10 @@ project(sn_geometry)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
     roscpp
-    geometry_msgs
+    sn_msgs
     tf
     tf_conversions
     pcl_ros
-    sensor_msgs
     cmake_modules
 )
 
@@ -89,7 +88,7 @@ find_package(PCL REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lib${PROJECT_NAME}
-#  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp sn_msgs
 #  DEPENDS system_lib
 )
 

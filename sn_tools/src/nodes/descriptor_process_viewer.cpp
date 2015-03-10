@@ -105,9 +105,12 @@ int main( int argc, char** argv )
         resolution = compute_resolution(smoothed);
         size = 500;
         resolution = radius*2/size;
+        cv::Mat smoothing = cv::Mat::zeros(size, size, CV_8UC3);
+        draw(smoothing,
+             smoothed, cv::Scalar(0,255,0), resolution);
         cv::Mat sampling = cv::Mat::zeros(size, size, CV_8UC3);
         draw(sampling,
-             smoothed, cv::Scalar(0,255,0), resolution);
+             resampled, cv::Scalar(0,255,0), resolution);
 
         // Down sampled
         sn::vector_pts_t centered = smoothed;
@@ -144,10 +147,11 @@ int main( int argc, char** argv )
 
         cv::imshow("surface", surface);
         cv::imshow("sampling", sampling);
+        cv::imshow("smoothing", smoothing);
         cv::imshow("oriented", oriented);
         cv::imshow("pair of points", pairofpt);
         cv::imshow("descriptor", LDTB);
-        int key = cv::waitKey(50);
+        int key = cv::waitKey();
         if(key==1048603)return 1;
 
 

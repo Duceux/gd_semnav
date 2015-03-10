@@ -10,9 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
     cv_bridge
     pcl_conversions
     pcl_ros
-    sensor_msgs
     sn_msgs
-    std_srvs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -93,14 +91,14 @@ find_package( OpenCV REQUIRED )
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES lib${PROJECT_NAME}
-#  CATKIN_DEPENDS roscpp sn_geometry cv_bridge pcl_conversions pcl_ros sensor_msgs sn_msgs std_srvs
+  CATKIN_DEPENDS roscpp sn_geometry cv_bridge pcl_conversions pcl_ros sn_msgs
 #  DEPENDS system_lib
 )
 
 ###########
 ## Build ##
 ###########
-add_definitions(-std=c++11 -g)
+add_definitions(-std=c++11)
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations

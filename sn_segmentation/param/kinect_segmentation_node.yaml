@@ -16,6 +16,6 @@ kinect_segmentation: { intDebug: 1,
                             fltECDistance: 0.08,
                             intECMinSize: 100,
                             intECMaxSize: 10000,
-                            int2dBorderTolerance: 0,
+                            int2dBorderTolerance: 5,
                             flt3dBorderTolerance: 0.02
                             }

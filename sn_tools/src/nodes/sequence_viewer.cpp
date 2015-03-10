@@ -87,7 +87,10 @@ int main( int argc, char** argv )
 
 
     TrackersSet trackers;
-    load("/home/robotic/Desktop/datasets/trackers/all.bag", trackers);
+    std::string filename;
+    ros::param::param<std::string>("~filename", filename,
+                                   "/home/robotic/Desktop/datasets/trackers/all.bag");
+    load(filename, trackers);
 
     std::map<std::string, std::string> pfh_ex_params;
     ros::param::get("pfh_ex", pfh_ex_params);
@@ -106,7 +109,7 @@ int main( int argc, char** argv )
 
     std::map<sn::Word, std::array<float, 3>> mColors;
     sn::Dictionary<sn::FastGetter> dicos;
-    dicos.set("laser", 0.1, sn::Distance(sn::symmetric_chi2_distance));
+    dicos.set("laser", 0.2, sn::Distance(sn::symmetric_chi2_distance));
     dicos.set("pfh", 0.05, sn::Distance(sn::symmetric_chi2_distance));
     dicos.set("size", 0.01, sn::Distance(sn::euclidean_distance));
     dicos.set("color", 3.0, sn::Distance(sn::symmetric_chi2_distance));
@@ -231,7 +234,7 @@ int main( int argc, char** argv )
             auto label = w;
             if(mColors.count( label ) == 0){
                 static std::default_random_engine generator;
-                static std::uniform_real_distribution<float> distribution(0.f,1.f);
+                static std::uniform_real_distribution<float> distribution(0.3f,0.7f);
                 static auto random = std::bind ( distribution, generator );
                 mColors[label][0] = random();
                 mColors[label][1] = random();
@@ -240,8 +243,8 @@ int main( int argc, char** argv )
             marker.pose.position.x = des.robot.x;
             marker.pose.position.y = des.robot.y;
             marker.pose.position.z = height_map[des.type];
-            marker.scale.x = 0.02;
-            marker.scale.y = 0.02;
+            marker.scale.x = 0.05;
+            marker.scale.y = 0.05;
             marker.scale.z = 0.01;
             marker.color.r = mColors[label][0];
             marker.color.g = mColors[label][1];
@@ -251,6 +254,9 @@ int main( int argc, char** argv )
             marker.lifetime = ros::Duration();
             marker.header.frame_id = tk->header.frame_id;
             marker.ns = "all";
+            marker.id = marray.markers.size();
+            marray.markers.push_back(marker);
+            marker.ns = des.type;
             marker.id = marray.markers.size();
             marray.markers.push_back(marker);
         }
@@ -274,12 +280,12 @@ int main( int argc, char** argv )
         poses_pub.publish(parray);
         kinect_pub.publish(cloud2);
 
-//        std::string mystr;
-//        std::cout << "Press enter to continue\n";
-//        std::getline (std::cin, mystr);
+        std::string mystr;
+        std::cout << "Press enter to continue\n";
+        std::getline (std::cin, mystr);
 
-        vseq.push_back(seq);
-        save("/home/robotic/Desktop/datasets/sequences/viewer.bag", vseq);
+//        vseq.push_back(seq);
+//        save("/home/robotic/Desktop/datasets/sequences/viewer.bag", vseq);
 
     }
 

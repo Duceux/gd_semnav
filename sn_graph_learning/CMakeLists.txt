@@ -89,18 +89,16 @@ catkin_package(
 ###########
 ## Build ##
 ###########
+add_definitions(-std=c++11)
+
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a cpp library
-# add_library(sn_graph_learning
-#   src/${PROJECT_NAME}/sn_graph_learning.cpp
-# )
 
 ## Declare a cpp executable
 # add_executable(sn_graph_learning_node src/sn_graph_learning_node.cpp)
