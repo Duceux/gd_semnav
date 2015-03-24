@@ -109,7 +109,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
                                           det.header.stamp);
 
       sn::point_t center1 = det_min->bbox.center;
-      sn::point_t center2 = det_min->bbox.center;
+      sn::point_t center2 = det.bbox.center;
       center1.z = center2.z = 0.0;
       double distance = sn::l2_norm(center1-center2);
       if(distance < mindist && distance<mThreshold){
