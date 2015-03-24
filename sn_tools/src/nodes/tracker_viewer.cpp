@@ -95,6 +95,7 @@ int main( int argc, char** argv )
   }
   TrackersSet trackers;
   for(fs::path it: result_set){
+    trackers.clear();
     load(it.string(), trackers);
 
     std::cout << "reading: " << it.filename().string() << std::endl;
