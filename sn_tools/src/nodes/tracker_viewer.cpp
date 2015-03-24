@@ -77,26 +77,56 @@ int main( int argc, char** argv )
   ros::init(argc, argv, "tool");
   ros::NodeHandle handle(std::string("~"));
 
-  fs::path someDir("/home/duceux/Desktop/phd-dataset/trackers/");
+  std::string source;
+  ros::param::param<std::string>("~source_dir", source,
+                    "/home/duceux/Desktop/phd-dataset/trackers/");
+  std::string target;
+  ros::param::param<std::string>("~target_dir", target,
+                    "/home/duceux/Desktop/phd-dataset/edited_trackers/");
+
+  bool edit_all;
+  ros::param::param("~edit_all", edit_all, false);
+
+  ROS_INFO("loading from folder %s", source.c_str());
+  ROS_INFO("saving in folder %s", target.c_str());
+  ROS_INFO("edit all? %s", edit_all? "true" : "false");
+
+  fs::path sourceDir(source);
   fs::directory_iterator end_iter;
   typedef std::set<fs::path> result_set_t;
   result_set_t result_set;
 
 
-  if ( fs::exists(someDir) && fs::is_directory(someDir))
+  if ( fs::exists(sourceDir) && fs::is_directory(sourceDir))
   {
-    for( fs::directory_iterator dir_iter(someDir) ; dir_iter != end_iter ; ++dir_iter)
+    for( fs::directory_iterator dir_iter(sourceDir) ; dir_iter != end_iter ; ++dir_iter)
     {
       if (fs::is_regular_file(dir_iter->status()) )
       {
-        result_set.insert(*dir_iter);
+        result_set.insert(dir_iter->path().filename());
       }
     }
   }
+
+  fs::path targetDir(target);
+  if(!edit_all)
+    if ( fs::exists(targetDir) && fs::is_directory(targetDir))
+    {
+      for( fs::directory_iterator dir_iter(targetDir) ; dir_iter != end_iter ; ++dir_iter)
+      {
+        if (fs::is_regular_file(dir_iter->status()) )
+        {
+          auto pos = result_set.find(dir_iter->path().filename());
+          if(pos != result_set.end())
+            result_set.erase(pos);
+        }
+      }
+    }
+
   TrackersSet trackers;
   for(fs::path it: result_set){
     trackers.clear();
-    load(it.string(), trackers);
+    load(source+it.string(), trackers);
 
     std::cout << "reading: " << it.filename().string() << std::endl;
     std::string filename = it.filename().string();
@@ -223,7 +253,7 @@ int main( int argc, char** argv )
         }
 
         if(x == 3)
-          break;
+          return 1;
 
       } catch( boost::bad_lexical_cast const& ) {
         if(mystr.size() > 0){
@@ -234,7 +264,7 @@ int main( int argc, char** argv )
       ++it;
 
     }
-    save("/home/duceux/Desktop/phd-dataset/edited_trackers/"+it.filename().string(),
+    save(target+it.filename().string(),
          trackers);
   }
   return 0;
