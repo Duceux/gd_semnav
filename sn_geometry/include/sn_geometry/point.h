@@ -3,12 +3,13 @@
 
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Pose2D.h>
-
+#include <geometry_msgs/Pose.h>
 namespace sn {
 
 typedef geometry_msgs::Point point_t;
 typedef std::vector<point_t> vector_pts_t;
 typedef geometry_msgs::Pose2D pose_t;
+typedef geometry_msgs::Pose pose_6d_t;
 
 point_t create(double x, double y, double z = 0.0);
 pose_t create_pose(double x, double y, double theta = 0.0);

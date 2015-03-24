@@ -52,4 +52,18 @@ void transform(const sensor_msgs::PointCloud2 &in, sensor_msgs::PointCloud2 &out
     pcl::toROSMsg(out_cloud, out);
 }
 
+pose_6d_t poseToPose6D(const pose_t &pose)
+{
+  pose_6d_t result;
+  result.position.x = pose.x;
+  result.position.y = pose.y;
+  result.position.z = 0.0;
+  tf::Quaternion tmp(tf::Vector3(0,0,1), pose.theta);
+  result.orientation.x = tmp.x();
+  result.orientation.y = tmp.y();
+  result.orientation.z = tmp.z();
+  result.orientation.w = tmp.w();
+  return result;
+}
+
 }

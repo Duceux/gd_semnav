@@ -17,6 +17,8 @@ namespace sn {
 
     void transform(sensor_msgs::PointCloud2 const& in, sensor_msgs::PointCloud2 & out,
                    tf::StampedTransform const& tf);
+
+    pose_6d_t poseToPose6D(pose_t const& pose);
 }
 
 #endif // TRANSFORM_H
