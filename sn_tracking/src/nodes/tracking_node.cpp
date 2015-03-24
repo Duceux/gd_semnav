@@ -24,6 +24,9 @@ struct Tracking{
   void track();
   sn_msgs::Tracker create_tracker(const sn_msgs::Detection& det);
 
+  template<typename Iterator>
+  Iterator find_closest_in_time(Iterator begin, Iterator end, ros::Time time);
+
   bool save(const std::string& filename);
 
   bool dump(std_srvs::EmptyRequest& req, std_srvs::EmptyResponse& rep);
@@ -65,23 +68,48 @@ sn_msgs::Tracker Tracking::create_tracker(const sn_msgs::Detection& det){
   return res;
 }
 
+template<typename Iterator>
+Iterator Tracking::find_closest_in_time(Iterator begin, Iterator end, ros::Time time)
+{
+
+  // find detection in time in the track
+  // because they are ordorred in time start from end
+  // if distance augment I can stop looking
+  auto det_min = begin;
+  double time_dist = std::abs((det_min->header.stamp-time).toSec());
+  for(auto it=begin; it!=end; ++it){
+    double dist = std::abs((it->header.stamp-time).toSec());
+    if(dist <= time_dist){
+      det_min = it;
+      time_dist = dist;
+    }
+    else
+      break;
+  }
+  return det_min;
+}
+
 void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
 
   mTrackers.header = ptr->header;
   for(auto& tck: mTrackers.trackers)
     tck.ended = true;
 
-  for(auto& det: ptr->detections){
+  for(const sn_msgs::Detection& det: ptr->detections){
 
     // find closest tracker
     double mindist = std::numeric_limits<double>::max();
     sn_msgs::Tracker* arg_min = NULL;
     bool found = false;
 
-    for(auto& tck: mTrackers.trackers){
-      auto& dk = tck.detections.back();
-      sn::point_t center1 = dk.bbox.center;
-      sn::point_t center2 = det.bbox.center;
+    for(sn_msgs::Tracker& tck: mTrackers.trackers){
+
+      auto det_min = find_closest_in_time(tck.detections.rbegin(),
+                                          tck.detections.rend(),
+                                          det.header.stamp);
+
+      sn::point_t center1 = det_min->bbox.center;
+      sn::point_t center2 = det_min->bbox.center;
       center1.z = center2.z = 0.0;
       double distance = sn::l2_norm(center1-center2);
       if(distance < mindist && distance<mThreshold){
@@ -92,10 +120,13 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
     }
 
     if(!found){
-      // new tracker
+      // new tracker     
       mTrackers.trackers.push_back(create_tracker(det));
     }else{
-      arg_min->detections.push_back(det);
+      auto det_min = find_closest_in_time(arg_min->detections.rbegin(),
+                                          arg_min->detections.rend(),
+                                          det.header.stamp);
+      arg_min->detections.insert(det_min.base(), det);
       arg_min->ended = false;
       arg_min->header = ptr->header;
     }
