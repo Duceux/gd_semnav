@@ -23,17 +23,13 @@ public:
 
     void mapCallback(OGridPtr map);
 
-    void initialpose(PoseCovStampPtr initial_pose);
-
     ros::NodeHandle node_;
     ros::Subscriber scanSub_;
     ros::Subscriber mapSub_;
-    ros::Subscriber poseSub_;
     ros::Publisher laserPub_;
     ros::Publisher cloudPub_;
     ros::Publisher scorePub_;
-    tf::StampedTransform odomTrans_;
-    tf::TransformListener listener_;
+    ros::Publisher pathPub_;
 
     Path path_;
 

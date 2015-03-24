@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <eigen3/Eigen/Core>
 #include <sn_geometry/sn_geometry.h>
+#include <nav_msgs/OccupancyGrid.h>
 
 namespace sn{
 
@@ -16,6 +17,7 @@ public:
         height(1000)
     {
         grid = cv::Mat::zeros(width, height, CV_8UC1) + 128;
+        blocked_ = cv::Mat::zeros(width, height, CV_8UC1);
         origin.x = -height/2*resolution;
         origin.y = -width/2*resolution;
         origin.theta = 0.0;
@@ -70,6 +72,50 @@ public:
 
     void computeRoi();
 
+    void block(const cv::Point& p){
+      blocked_.at<uchar>(p) = (uchar)255;
+    }
+
+    void unblock(const cv::Point& p){
+      blocked_.at<uchar>(p) = (uchar)0;
+    }
+
+    void unblockall(){
+      blocked_ = cv::Mat::zeros(width, height, CV_8UC1);
+    }
+
+    void blockall(){
+      blocked_ = cv::Mat::zeros(width, height, CV_8UC1)+255;
+    }
+
+    bool blocked(const cv::Point& p){
+      return blocked_.at<uchar>(p) > 0;
+    }
+
+    cv::Rect getRoi()const{
+      return roi;
+    }
+
+    int getHeight()const{
+      return height;
+    }
+
+    int getWidth()const{
+      return width;
+    }
+
+    double getResolution()const{
+      return resolution;
+    }
+
+    cv::Mat getGrid()const{
+      return grid;
+    }
+
+    friend void rosToMap(nav_msgs::OccupancyGrid& og, Map &map);
+    friend void rosToMap(nav_msgs::OccupancyGrid::ConstPtr og, Map &map);
+    friend void mapToRos(const Map &map, nav_msgs::OccupancyGrid& og);
+
 private:
     cv::Point minPoint();
 
@@ -80,16 +126,16 @@ private:
         return dist_grid.at<float>(p);
     }
 
-public:
+
+
+private:
     double resolution;
     pose_t origin;
     int width;
     int height;
-
     cv::Mat grid;
+    cv::Mat blocked_;
     cv::Mat dist_grid;
-
-
     cv::Rect roi;
 };
 

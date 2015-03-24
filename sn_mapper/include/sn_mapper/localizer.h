@@ -40,11 +40,33 @@ enum Status{
     LOST
 };
 
+
+class PositionFilter{
+public:
+
+  pose_t predict(){
+    return oplus(current_, ominus(last_, current_));
+  }
+
+  void update(pose_t const& measurement){
+    last_ = current_;
+    current_ = measurement;
+  }
+
+  void set_initial(pose_t const& p0){
+    current_ = p0;
+    last_ = p0;
+  }
+
+private:
+  pose_t current_;
+  pose_t last_;
+};
+
 class Localizer{
 public:
     Localizer(){
         mInit = false;
-        mHasHint = false;
     }
 
     void init(const Map &map);
@@ -60,9 +82,7 @@ public:
     void generateParticles(int number, float strength, const Particle &p);
 
     void scoreParticle(Particle& pl, const vector_pts_t &points);
-
-    void scoreParticle2(Particle& pl, const vector_pts_t &points);
-
+    void fullScoreParticle(Particle& pl, const vector_pts_t &points);
 
     pose_t getPosition(){return mBestP;}
     void setPosition(const pose_t& pos){
@@ -74,48 +94,18 @@ public:
     double getScore(){return mBestP.score;}
     double getFastScore(){return mBestP.fast_score;}
 
-    void setvector_pts_tPose(const pose_t& trans){
-        vector_pts_tPose_ = trans;
-    }
-    pose_t getvector_pts_tPose(){return vector_pts_tPose_;}
-
-    Particle predict(){
-        if(mPath.size()<2)
-            return mBestP;
-        Particle prediction;
-        prediction.set(oplus(mPath[mPath.size()-1],
-              ominus(mPath[mPath.size()-2] ,mPath[mPath.size()-1])));
-        return prediction;
-    }
-
-    std::vector< Particle > mParticles;
-
+    const std::vector< Particle >& getParticles()const{return mParticles;}
 
 private:
-
     Map mMap;
-
     Particle mBestP;
-    Particle mLastP;
-
     std::vector< Particle > mPath;
-
-    std::vector< Particle > mSeeds;
-
-    vector_pts_t mvector_pts_t;
-
     bool mInit;
-
     RandomGenerator mRandom;
-
-    float mStdth;
-    double mTh;
-
-    bool mHasHint;
-    bool mIsLost;
-
-    pose_t vector_pts_tPose_;
+    std::vector< Particle > mParticles;
+    PositionFilter mPFilter;
 };
+
 
 }
 

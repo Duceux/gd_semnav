@@ -1,28 +1,28 @@
-#include "mapper.h"
+#include "globalmapper.h"
 
 namespace sn{
 
-MapUpdaterNode::MapUpdaterNode(const ros::NodeHandle& node):
+GlobalMapper::GlobalMapper(const ros::NodeHandle& node):
   node_(node),
   mMapReceived(false),
   mGoodScore(false)
 {
 
-  mapSub_ = node_.subscribe("/localizer/localized_scan", 1, &MapUpdaterNode::scanCallback, this);
-  scoreSub_ = node_.subscribe("/localizer/score", 1, &MapUpdaterNode::scoreCallback, this);
+  mapSub_ = node_.subscribe("/globallocalizer/localized_scan", 1, &GlobalMapper::scanCallback, this);
+  scoreSub_ = node_.subscribe("/globallocalizer/score", 1, &GlobalMapper::scoreCallback, this);
 
-  mapPub_ = node_.advertise<nav_msgs::OccupancyGrid>("/map", 2, true);
+  mapPub_ = node_.advertise<nav_msgs::OccupancyGrid>("/static_map", 2, true);
 
   ros::param::param<bool>("~new_map", mNewMap, true);
   ros::param::param<bool>("~score_disp", mScoreDisp, false);
 
 }
 
-void MapUpdaterNode::scanCallback(LaserPtr scan){
+void GlobalMapper::scanCallback(LaserPtr scan){
   if(!mNewMap && !mMapReceived)return;
 
   static bool first_scan = true;
-  if(first_scan){
+  if(first_scan && mNewMap){
     sn::vector_pts_t l;
     sn::pose_t robot = create_pose(0,0,0);
     sn::rosToLaser(*scan, l);
@@ -34,14 +34,14 @@ void MapUpdaterNode::scanCallback(LaserPtr scan){
   tf::StampedTransform transform;
 
   try{
-    listener_.waitForTransform("map", "laser", scan->header.stamp, ros::Duration(0.5));
-    listener_.lookupTransform("map", "laser", scan->header.stamp, transform);
+    listener_.waitForTransform("static_map", "laser", scan->header.stamp, ros::Duration(0.5));
+    listener_.lookupTransform("static_map", "laser", scan->header.stamp, transform);
   }
   catch (tf::TransformException ex){
     //        ROS_ERROR("%s",ex.what());
     OGrid og;
     sn::mapToRos(mMap, og);
-    og.header.frame_id = "/map";
+    og.header.frame_id = "/static_map";
     mapPub_.publish(og);
     return;
   }
@@ -65,7 +65,7 @@ void MapUpdaterNode::scanCallback(LaserPtr scan){
   if(count%5 == 0){
     OGrid og;
     sn::mapToRos(mMap, og);
-    og.header.frame_id = "/map";
+    og.header.frame_id = "/static_map";
     mapPub_.publish(og);
     count = 0;
   }else
@@ -73,7 +73,7 @@ void MapUpdaterNode::scanCallback(LaserPtr scan){
 
 }
 
-void MapUpdaterNode::scoreCallback(std_msgs::Float64::ConstPtr score){
+void GlobalMapper::scoreCallback(std_msgs::Float64::ConstPtr score){
   if(score->data < 0.5 && !mGoodScore){
     mGoodScore = true;
     std::cout << "Starting to update map \n";
@@ -83,7 +83,7 @@ void MapUpdaterNode::scoreCallback(std_msgs::Float64::ConstPtr score){
   }
 }
 
-void MapUpdaterNode::mapCallback(OGridPtr map){
+void GlobalMapper::mapCallback(OGridPtr map){
   ROS_INFO("Map received");
 
   sn::rosToMap(map, mMap);
@@ -95,7 +95,7 @@ void MapUpdaterNode::mapCallback(OGridPtr map){
 
 }
 
-void MapUpdaterNode::updateMap(const sn::vector_pts_t &points, sn::pose_t &pose, int hit_s, int miss_s){
+void GlobalMapper::updateMap(const sn::vector_pts_t &points, sn::pose_t &pose, int hit_s, int miss_s){
   mMap.computeDistDiff();
 
   mMap.unblockall();
@@ -129,7 +129,7 @@ void MapUpdaterNode::updateMap(const sn::vector_pts_t &points, sn::pose_t &pose,
   }
 }
 
-void MapUpdaterNode::scoreScan(const sn::vector_pts_t& points, double& mean, double &std){
+void GlobalMapper::scoreScan(const sn::vector_pts_t& points, double& mean, double &std){
   // score the whole scan
   double score = 0;
   double count = 0;
@@ -153,10 +153,10 @@ void MapUpdaterNode::scoreScan(const sn::vector_pts_t& points, double& mean, dou
 
 int main( int argc, char** argv )
 {
-  ros::init(argc, argv, "mapper");
+  ros::init(argc, argv, "globalmapper");
   ros::NodeHandle n(std::string("~"));
 
-  sn::MapUpdaterNode mynode(n);
+  sn::GlobalMapper mynode(n);
 
   ros::spin();
   return 0;
