@@ -88,7 +88,6 @@ void LaserSegmentation::callback(const sensor_msgs::LaserScanConstPtr &input){
       //      --i;
     }
 
-  // look at the series of zeros and if the series is too small remove it
   for(size_t i=1; i<indexes.size()-1; ++i){
     Eigen::Vector2d p1( pts(indexes[i].first,0), pts(indexes[i].first,1));
     Eigen::Vector2d p2( pts(indexes[i].second,0), pts(indexes[i].second,1));
@@ -159,7 +158,9 @@ int main( int argc, char** argv )
 
   LaserSegmentation segmentation;
 
-  segmentation.scanSub = handle.subscribe("/scan", 100, &LaserSegmentation::callback, &segmentation);
+  std::string laser_topic;
+  ros::param::param<std::string>("~laser_topic",laser_topic,"/scan");
+  segmentation.scanSub = handle.subscribe(laser_topic, 1, &LaserSegmentation::callback, &segmentation);
   segmentation.detectionPub = handle.advertise<sn_msgs::DetectionArray>("/detections", 1);
   segmentation.filteredPub = handle.advertise<sensor_msgs::LaserScan>("detection_scan", 1);
 

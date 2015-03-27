@@ -85,7 +85,6 @@ struct max_component_size: public intersection_size{
   }
 };
 
-
 }
 
 }

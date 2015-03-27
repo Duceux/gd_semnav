@@ -80,6 +80,8 @@ struct Dictionary{
     std::size_t size(std::string const& type){return words[type].size();}
 };
 
+typedef Dictionary<FastGetter> FastDictionary;
+
 }// sn
 
 

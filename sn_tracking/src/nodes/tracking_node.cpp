@@ -71,22 +71,16 @@ sn_msgs::Tracker Tracking::create_tracker(const sn_msgs::Detection& det){
 template<typename Iterator>
 Iterator Tracking::find_closest_in_time(Iterator begin, Iterator end, ros::Time time)
 {
-
   // find detection in time in the track
   // because they are ordorred in time start from end
   // if distance augment I can stop looking
-  auto det_min = begin;
-  double time_dist = std::abs((det_min->header.stamp-time).toSec());
   for(auto it=begin; it!=end; ++it){
-    double dist = std::abs((it->header.stamp-time).toSec());
-    if(dist <= time_dist){
-      det_min = it;
-      time_dist = dist;
+    double dist = (it->header.stamp-time).toSec();
+    if(dist <= 0.0){
+      return it;
     }
-    else
-      break;
   }
-  return det_min;
+  return begin;
 }
 
 void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
@@ -118,7 +112,6 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
         found = true;
       }
     }
-
     if(!found){
       // new tracker     
       mTrackers.trackers.push_back(create_tracker(det));
@@ -163,7 +156,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
     auto label = tck.uid;
     if(mColors.count( label ) == 0){
       static std::default_random_engine generator;
-      static std::uniform_real_distribution<float> distribution(0.f,1.f);
+      static std::uniform_real_distribution<float> distribution(0.f, 0.5f);
       static auto random = std::bind ( distribution, generator );
       mColors[label][0] = random();
       mColors[label][1] = random();
@@ -198,7 +191,7 @@ void Tracking::detection_callback(const sn_msgs::DetectionArrayConstPtr &ptr){
     marker.color.b = 0;
     marker.color.a = 1.0;
     std::stringstream str;
-    str << label;
+    str << label.toNSec();
     marker.text = str.str();
     marker.lifetime = ros::Duration(mTimeThreshold);
     marker.header.frame_id = ptr->header.frame_id;
@@ -245,14 +238,14 @@ int main( int argc, char** argv )
   ros::param::param<std::string>("~input", input,
                                  "/detections");
   tracking.mDetectSub = handle.subscribe(input,
-                                         1,
+                                         10,
                                          &Tracking::detection_callback,
                                          &tracking
                                          );
 
-  tracking.mTrackerPub = handle.advertise<sn_msgs::TrackerArray>("trackers", 1);
+  tracking.mTrackerPub = handle.advertise<sn_msgs::TrackerArray>("trackers", 5);
   tracking.mTrackerPub2 = handle.advertise<sn_msgs::Tracker>("ended_tracker", 5);
-  tracking.mDebugPub = handle.advertise<visualization_msgs::Marker>("markers", 1);
+  tracking.mDebugPub = handle.advertise<visualization_msgs::Marker>("markers", 5);
 
   tracking.mDumpService = handle.advertiseService("dump", &Tracking::dump, &tracking);
 

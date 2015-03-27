@@ -11,7 +11,7 @@ struct ConfusionMatrix{
   std::map<std::string, std::map<std::string, double> > matrix;
   unsigned int nb_queries;
 
-
+  ConfusionMatrix& operator +=(ConfusionMatrix const& b);
 };
 
 template<typename Truth, typename Test, typename Sim>
@@ -70,6 +70,9 @@ void save_confusion_matrix(const ConfusionMatrix& matrix, const std::string& fil
     count1++;
   }
 }
+
+void save_confusion_matrix(const ConfusionMatrix& matrix, const std::string& filename,
+                           std::map<int, std::string> mapping);
 
 void print(const ConfusionMatrix& matrix){
     auto pre = std::cout.precision();

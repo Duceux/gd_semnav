@@ -27,6 +27,9 @@ struct GraphOfWord{
     static Ptr create();
 
     void print()const;
+
+    int nb_words()const{return graph->nb_nodes();}
+
 };
 
 typedef GraphOfWord::Ptr GraphOfWordPtr;

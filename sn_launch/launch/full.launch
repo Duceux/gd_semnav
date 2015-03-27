@@ -6,8 +6,9 @@
   	</node>
 	<node name="mapper" pkg="sn_mapper" type="sn_mapper_mapper" output="screen">
   	</node>
-
+  	
 	<node name="laser_segmentation" pkg="sn_segmentation" type="laser_segmentation" output="screen">
+		    <param name="laser_topic" type="string" value="/scan" />
 	    	<param name="distance" type="double" value="0.5" />
   	</node>
 
@@ -15,7 +16,7 @@
   	<arg name="kinect_segmentation_node_param_file" default="$(find sn_segmentation)/param/kinect_segmentation_node.yaml"/>
   	<rosparam file="$(arg kinect_segmentation_node_param_file)" command="load" />
 
-  	<node name="kinect_segmentation" pkg="sn_segmentation" type="kinect_segmentation_node" output="screen" launch-prefix="gdb -ex run --args">
+  	<node name="kinect_segmentation" pkg="sn_segmentation" type="kinect_segmentation_node" output="screen">
     		<param name="input" type="string" value="/camera/depth_registered/points" />
   	</node>
 
@@ -29,6 +30,6 @@
 	<node name="tracking" pkg="sn_tracking" type="tracking_node" output="screen">
 	    <param name="input" type="string" value="/transformer/detections" />
 	    <param name="threshold" type="double" value="0.5" />
-	    <param name="time_threshold" type="double" value="1.0" />
+	    <param name="time_threshold" type="double" value="2.0" />
 	</node>
 </launch>

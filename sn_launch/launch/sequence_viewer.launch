@@ -3,7 +3,9 @@
   <rosparam file="$(arg extractor_params)" command="load" />
 
   <node name="sequence_viewer" pkg="sn_tools" type="sn_tools_sequence_viewer" output="screen">
-	<param name="filename" type="string" value="/home/robotic/Desktop/datasets/kdb_trackers/all.bag" />	
+  	<param name="source_dir" type="string" value="/home/duceux/Desktop/phd-dataset/edited_trackers/" />	
+  	<param name="target_dir" type="string" value="/home/duceux/Desktop/phd-dataset/sequence/" />	
+   	<param name="edit_all" type="bool" value="false" />	
   </node>
   <node name="rviz_1" pkg="rviz" type="rviz" args="-d $(find sn_launch)/param/tracker_viewer.rviz"/>
 </launch>

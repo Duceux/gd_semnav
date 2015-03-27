@@ -31,12 +31,12 @@ typedef sn_msgs::DescriptorSequence Seq;
 typedef sn_msgs::Descriptor Des;
 typedef std::vector<Seq> VSeq;
 
-void load(const std::string& filename, TrackersSet& trackers)
+void load(const fs::path& path, TrackersSet& trackers)
 {
-  std::cout << "opening: " << filename << std::endl;
+  std::cout << "opening: " << path << std::endl;
   rosbag::Bag bag;
   try{
-    bag.open(filename, rosbag::bagmode::Read);
+    bag.open(path.string(), rosbag::bagmode::Read);
     std::vector<std::string> topics;
     topics.push_back(std::string("/tracking/ended_tracker"));
 
@@ -46,8 +46,9 @@ void load(const std::string& filename, TrackersSet& trackers)
       sn_msgs::TrackerPtr g = m.instantiate<sn_msgs::Tracker>();
       if (g != NULL){
         trackers.insert(g);
-        if(g->name.size() != 0)
-          (*trackers.find(g))->name = g->name;
+        std::stringstream str;
+        str << path.stem().string() << "_" << g->uid.toNSec();
+        (*trackers.find(g))->name = str.str();
       }
     }
     bag.close();
@@ -59,14 +60,14 @@ void load(const std::string& filename, TrackersSet& trackers)
 
 }
 
-void save(const std::string& filename, VSeq const& trackers)
+void save(const std::string& filename, Seq const& seq)
 {
   rosbag::Bag bag;
   bag.open(filename, rosbag::bagmode::Write);
   long unsigned int total = 0;
-  for(auto tck: trackers){
+  {
     try{
-      bag.write("sequence", ros::Time::now(), tck);
+      bag.write("sequence", ros::Time::now(), seq);
       total++;
     }catch(const std::exception& e){
       ROS_ERROR("%s", e.what());
@@ -85,12 +86,61 @@ int main( int argc, char** argv )
   ros::init(argc, argv, "sequence_viewer");
   ros::NodeHandle handle(std::string("~"));
 
+  std::string source;
+  ros::param::param<std::string>("~source_dir", source,
+                                 "/home/duceux/Desktop/phd-dataset/trackers/");
+  std::string target;
+  ros::param::param<std::string>("~target_dir", target,
+                                 "/home/duceux/Desktop/phd-dataset/edited_trackers/");
 
-  TrackersSet trackers;
-  std::string filename;
-  ros::param::param<std::string>("~filename", filename,
-                                 "/home/robotic/Desktop/datasets/trackers/all.bag");
-  load(filename, trackers);
+  bool saving;
+  ros::param::param("~saving", saving, false);
+
+  bool edit_all;
+  ros::param::param("~edit_all", edit_all, false);
+
+  ROS_INFO("loading from folder %s", source.c_str());
+  ROS_INFO("saving in folder %s", target.c_str());
+  ROS_INFO("edit all? %s", edit_all? "true" : "false");
+
+  fs::path sourceDir(source);
+  fs::directory_iterator end_iter;
+  typedef std::set<fs::path> result_set_t;
+  result_set_t result_set;
+
+
+  if ( fs::exists(sourceDir) && fs::is_directory(sourceDir))
+  {
+    for( fs::directory_iterator dir_iter(sourceDir) ; dir_iter != end_iter ; ++dir_iter)
+    {
+      if (fs::is_regular_file(dir_iter->status()) )
+      {
+        result_set.insert(dir_iter->path().filename());
+      }
+    }
+  }else if( fs::exists(sourceDir) && fs::is_regular_file(sourceDir))
+    result_set.insert(sourceDir.filename());
+
+  fs::path targetDir(target);
+  if(!edit_all)
+    if ( fs::exists(targetDir) && fs::is_directory(targetDir))
+    {
+      for( fs::directory_iterator dir_iter(targetDir) ; dir_iter != end_iter ; ++dir_iter)
+      {
+        if (fs::is_regular_file(dir_iter->status()) )
+        {
+          auto pos = result_set.find(dir_iter->path().filename());
+          if(pos != result_set.end())
+            result_set.erase(pos);
+        }
+      }
+    }else if( fs::exists(sourceDir) && fs::is_regular_file(sourceDir)){
+      auto pos = result_set.find(sourceDir.filename());
+      if(pos != result_set.end())
+        result_set.erase(pos);
+    }
+
+
 
   std::map<std::string, std::string> pfh_ex_params;
   ros::param::get("pfh_ex", pfh_ex_params);
@@ -109,7 +159,7 @@ int main( int argc, char** argv )
 
   std::map<sn::Word, std::array<float, 3>> mColors;
   sn::Dictionary<sn::FastGetter> dicos;
-  dicos.set("laser", 0.2, sn::Distance(sn::symmetric_chi2_distance));
+  dicos.set("laser", 0.4, sn::Distance(sn::symmetric_chi2_distance));
   dicos.set("pfh", 0.05, sn::Distance(sn::symmetric_chi2_distance));
   dicos.set("size", 0.01, sn::Distance(sn::euclidean_distance));
   dicos.set("color", 3.0, sn::Distance(sn::symmetric_chi2_distance));
@@ -151,7 +201,14 @@ int main( int argc, char** argv )
   ros::Publisher kinect_pub = handle.advertise<sensor_msgs::PointCloud2>("/kinect_cloud",1,true);
   ros::Publisher poses_pub = handle.advertise<geometry_msgs::PoseArray>("/poses", 1, true);
   ros::Publisher marker_pub = handle.advertise<visualization_msgs::MarkerArray>("/words",1000,true);
-  VSeq vseq;
+
+  TrackersSet trackers;
+  for(fs::path it: result_set){
+    load(source+it.string(), trackers);
+    std::cout << "reading: " << it.filename().string() << std::endl;
+    std::string filename = it.filename().string();
+  }
+  ROS_INFO("nb trackers loaded: %lu ", trackers.size());
 
   for(sn_msgs::TrackerPtr tk: trackers){
     nav_msgs::Path path;
@@ -193,7 +250,9 @@ int main( int argc, char** argv )
       if(det.cloud.data.size() > 0){
         pcl::PointCloud<pcl::PointXYZRGB> tmp;
         pcl::fromROSMsg(det.cloud, tmp);
-        ptcld2.insert(ptcld2.end(), tmp.begin(), tmp.end());
+        if(ptcld2.size() < tmp.size())
+          ptcld2 = tmp;
+//        ptcld2.insert(ptcld2.end(), tmp.begin(), tmp.end());
         has_kinect = true;
       }
 
@@ -203,7 +262,6 @@ int main( int argc, char** argv )
     pcl::toROSMsg(ptcld, cloud);
     cloud.header = tk->header;
     parray.header = tk->header;
-    ptcld2.insert(ptcld2.end(), ptcld.begin(), ptcld.end());
     pcl::toROSMsg(ptcld2, cloud2);
     cloud2.header = tk->header;
 
@@ -281,9 +339,9 @@ int main( int argc, char** argv )
     std::cout << "Press enter to continue\n";
     std::getline (std::cin, mystr);
 
-    //        vseq.push_back(seq);
-    //        save("/home/robotic/Desktop/datasets/sequences/viewer.bag", vseq);
-
+    if(saving)
+      save(target+tk->name,
+           seq);
   }
 
   return 0;

@@ -34,35 +34,46 @@ void LocalizerNode::scanCallback(LaserPtr scan){
   vector_pts_t l;
   sn::rosToLaser(s, l);
   localizer_.process(l);
-  geometry_msgs::PoseArray pose_array;
-  for(auto it=localizer_.getParticles().begin(); it!=localizer_.getParticles().end(); ++it){
-    geometry_msgs::PoseStamped p;
-    sn::poseToRos(*it, p);
-    pose_array.poses.push_back(p.pose);
+  //laser
+  if(localizer_.getScore() < 5.0){
+    laserPub_.publish(s);
+    //tf
+    sn::poseToTf(localizer_.getPosition(), best_tranform);
+    best_tranform.getRotation().normalize();
+    br.sendTransform(tf::StampedTransform(best_tranform.inverse(), s.header.stamp, "/laser", "/map"));
+  }else{
+    pose_t old;
+    sn::tfToPose(best_tranform, old);
+    localizer_.setPosition(old);
   }
-  pose_array.header = scan->header;
-  pose_array.header.frame_id = "/map";
-  cloudPub_.publish(pose_array);
-
-  sn::poseToTf(localizer_.getPosition(), best_tranform);
+  //score
   std_msgs::Float64 score_msg;
   score_msg.data = localizer_.getScore();
   scorePub_.publish(score_msg);
 
-  geometry_msgs::PoseStamped p;
-  p.header = scan->header;
-  p.header.frame_id = "/map";
-  p.pose = sn::poseToPose6D(localizer_.getPosition());
-  path_.poses.push_back(p);
-  path_.header = scan->header;
-  path_.header.frame_id = "/map";
-  pathPub_.publish(path_);
+  if(cloudPub_.getNumSubscribers() > 0){
+    geometry_msgs::PoseArray pose_array;
+    for(auto it=localizer_.getParticles().begin(); it!=localizer_.getParticles().end(); ++it){
+      geometry_msgs::PoseStamped p;
+      sn::poseToRos(*it, p);
+      pose_array.poses.push_back(p.pose);
+    }
+    pose_array.header = scan->header;
+    pose_array.header.frame_id = "/map";
+    cloudPub_.publish(pose_array);
+  }
 
-  if(localizer_.getScore() < 0.5)
-    laserPub_.publish(s);
+  if(pathPub_.getNumSubscribers() > 0){
+    geometry_msgs::PoseStamped p;
+    p.header = scan->header;
+    p.header.frame_id = "/map";
+    p.pose = sn::poseToPose6D(localizer_.getPosition());
+    path_.poses.push_back(p);
+    path_.header = scan->header;
+    path_.header.frame_id = "/map";
+    pathPub_.publish(path_);
+  }
 
-  best_tranform.getRotation().normalize();
-  br.sendTransform(tf::StampedTransform(best_tranform.inverse(), s.header.stamp, "/laser", "/map"));
 }
 
 void LocalizerNode::mapCallback(OGridPtr map){

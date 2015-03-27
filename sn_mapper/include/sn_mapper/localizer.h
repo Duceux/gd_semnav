@@ -37,7 +37,8 @@ inline std::ostream& operator << (std::ostream& out, const Particle& p){
 enum Status{
     NO_UPDATE,
     UPDATE,
-    LOST
+    LOST,
+    NOT_MOVING
 };
 
 
@@ -63,26 +64,57 @@ private:
   pose_t last_;
 };
 
+class BaseScore{
+public:
+  virtual ~BaseScore(){}
+  virtual void score(Map const& map, Particle& model, vector_pts_t const& sensor, double best_score_yet) = 0;
+  virtual bool better_than(Particle const& cand, Particle const& ref) = 0;
+};
+
+class MeanDistScore: public BaseScore{
+public:
+  MeanDistScore(double factor = 1.0):factor_filter_(factor){}
+  virtual void score(Map const& map, Particle& model, vector_pts_t const& sensor, double best_score_yet);
+  virtual bool better_than(Particle const& cand, Particle const& ref);
+private:
+  double factor_filter_;
+};
+
+class NbOfFitted: public BaseScore{
+public:
+  virtual void score(Map const& map, Particle& model, vector_pts_t const& sensor, double best_score_yet);
+  virtual bool better_than(Particle const& cand, Particle const& ref);
+};
+
+
 class Localizer{
 public:
-    Localizer(){
-        mInit = false;
+    Localizer():
+      mInit(false),
+      mScoreFPtr(std::make_shared<MeanDistScore>(2.0))
+    {
+      mParticles.clear();
+      for(double dx = -0.01; dx<=0.01; dx+=0.002)
+        for(double dy = -0.01; dy<=0.01; dy+=0.002)
+          for(double dz = -0.01; dz<=0.01; dz+=0.002){
+            Particle newp;
+            newp.set(create_pose(dx, dy, dz));
+            mParticles.push_back(newp);
+          }
+      for(double dx = -0.25; dx<=0.25; dx+=0.05)
+        for(double dy = -0.25; dy<=0.25; dy+=0.05)
+          for(double dz = -0.25; dz<=0.25; dz+=0.05){
+            Particle newp;
+            newp.set(create_pose(dx, dy, dz));
+            mParticles.push_back(newp);
+          }
+      mCandidates.resize(mParticles.size());
+
     }
 
     void init(const Map &map);
 
     int process(vector_pts_t& points);
-
-    inline point_t project(const pose_t& ref, const point_t& point){
-        return oplus(ref, point);
-    }
-
-    void generateUniformParticles(int number);
-
-    void generateParticles(int number, float strength, const Particle &p);
-
-    void scoreParticle(Particle& pl, const vector_pts_t &points);
-    void fullScoreParticle(Particle& pl, const vector_pts_t &points);
 
     pose_t getPosition(){return mBestP;}
     void setPosition(const pose_t& pos){
@@ -94,7 +126,7 @@ public:
     double getScore(){return mBestP.score;}
     double getFastScore(){return mBestP.fast_score;}
 
-    const std::vector< Particle >& getParticles()const{return mParticles;}
+    const std::vector< Particle >& getParticles()const{return mCandidates;}
 
 private:
     Map mMap;
@@ -103,9 +135,11 @@ private:
     bool mInit;
     RandomGenerator mRandom;
     std::vector< Particle > mParticles;
-    PositionFilter mPFilter;
-};
+    std::vector< Particle > mCandidates;
 
+    PositionFilter mPFilter;
+    std::shared_ptr<BaseScore> mScoreFPtr;
+};
 
 }
 

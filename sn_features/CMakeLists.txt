@@ -106,7 +106,7 @@ include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
-
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -121,14 +121,15 @@ target_link_libraries(
     ${catkin_LIBRARIES}
     ${PCL_LIBRARIES}
     ${OpenCV_LIBS}
+    opencv_nonfree
 )
 
 ## Declare nodes
 file( GLOB NODES src/nodes/*.cpp )
 foreach( appsourcefile ${NODES} )
     get_filename_component(prog ${appsourcefile} NAME_WE)
-    add_executable( ${prog} ${appsourcefile} )
-    target_link_libraries(${prog} lib${PROJECT_NAME})
+    add_executable( ${PROJECT_NAME}_${prog} ${appsourcefile} )
+    target_link_libraries(${PROJECT_NAME}_${prog} lib${PROJECT_NAME})
 endforeach( appsourcefile ${APP_SOURCES} )
 
 ## Add cmake target dependencies of the executable/library

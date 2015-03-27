@@ -79,10 +79,10 @@ int main( int argc, char** argv )
 
   std::string source;
   ros::param::param<std::string>("~source_dir", source,
-                    "/home/duceux/Desktop/phd-dataset/trackers/");
+                                 "/home/duceux/Desktop/phd-dataset/trackers/");
   std::string target;
   ros::param::param<std::string>("~target_dir", target,
-                    "/home/duceux/Desktop/phd-dataset/edited_trackers/");
+                                 "/home/duceux/Desktop/phd-dataset/edited_trackers/");
 
   bool edit_all;
   ros::param::param("~edit_all", edit_all, false);
@@ -143,11 +143,19 @@ int main( int argc, char** argv )
         }
         */
 
-      if(sn::l2_norm(tk->detections.front().robot-tk->detections.back().robot) < 1.0){
+      bool flag = false;
+      for(int i=tk->detections.size()/2; i<tk->detections.size(); ++i){
+        if(sn::l2_norm(tk->detections.front().robot-tk->detections[i].robot) > 1.0){
+          flag = true;
+          break;
+        }
+      }
+      if(!flag){
         std::cout << "Erasing: " << " " << tk->uid << std::endl;
         it = trackers.erase(it);
         continue;
       }
+
 
       if(tk->detections.size() < 150){
         std::cout << "Erasing: " << " " << tk->uid << std::endl;
