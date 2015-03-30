@@ -1,5 +1,5 @@
 <launch>
-  <node name="full_reco" pkg="sn_tools" type="sn_tools_graph_versus_bow" output="screen" launch-prefix="gdb -ex run --args">
+  <node name="full_reco" pkg="sn_tools" type="sn_tools_gow_study_metric" output="screen" launch-prefix="gdb -ex run --args">
   	<param name="source_dir" type="string" value="/home/duceux/Desktop/phd-dataset/sequence/" />
   	<param name="saving" type="bool" value="false" />	
   </node>

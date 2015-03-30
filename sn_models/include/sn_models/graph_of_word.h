@@ -30,6 +30,12 @@ struct GraphOfWord{
 
     int nb_words()const{return graph->nb_nodes();}
 
+    std::map<std::string, int> type_map()const;
+
+    std::string type_of(edge_t const& e)const;
+    std::string type_of(node_t const& e)const;
+
+
 };
 
 typedef GraphOfWord::Ptr GraphOfWordPtr;

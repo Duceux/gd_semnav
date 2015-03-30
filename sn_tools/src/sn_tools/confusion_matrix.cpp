@@ -7,6 +7,7 @@ ConfusionMatrix& ConfusionMatrix::operator +=(const ConfusionMatrix &b)
   for(auto it: b.matrix)
     for(auto it2: it.second)
       matrix[it.first][it2.first] += it2.second;
+  nb_queries+=b.nb_queries;
   return *this;
 }
 

@@ -16,8 +16,6 @@ void GraphOfWord::add(const Word &w)
     if(duration > ros::Duration() && duration < dmin)
       dmin = duration;
   }
-//  std::cout << dmin << std::endl;
-
   for(auto n: graph->get_nodes()){
     auto duration =  w.descriptor.header.stamp - n.key.descriptor.header.stamp;
     if(duration <= dmin && dmin < ros::DURATION_MAX &&
@@ -40,7 +38,34 @@ void GraphOfWord::print() const
 //  for(auto n: graph->get_nodes())
 //    std::cout << n << std::endl;
 //  for(auto n: graph->get_edges())
-//    std::cout << n << std::endl;
+  //    std::cout << n << std::endl;
+}
+
+std::map<std::string, int> GraphOfWord::type_map() const
+{
+  std::map<std::string, int> result;
+  for(node_t w: graph->get_nodes()){
+    result["node"]++;
+    result[type_of(w)]++;
+  }
+  for(edge_t w: graph->get_edges()){
+    result["edge"]++;
+    result[type_of(w)]++;
+  }
+  return result;
+}
+
+std::string GraphOfWord::type_of(const edge_t &e)const
+{
+  if(e.parent.type < e.child.type)
+    return e.parent.type+"-"+e.child.type;
+  else
+    return e.child.type+"-"+e.parent.type;
+}
+
+std::string GraphOfWord::type_of(const node_t &e)const
+{
+  return e.key.type;
 }
 
 }

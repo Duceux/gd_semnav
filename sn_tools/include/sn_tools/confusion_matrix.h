@@ -12,6 +12,7 @@ struct ConfusionMatrix{
   unsigned int nb_queries;
 
   ConfusionMatrix& operator +=(ConfusionMatrix const& b);
+  ConfusionMatrix():nb_queries(0){}
 };
 
 template<typename Truth, typename Test, typename Sim>
@@ -55,6 +56,21 @@ double get_precision(const ConfusionMatrix& matrix){
     }
   }
   return good/(double)matrix.nb_queries*100.0;
+}
+
+double get_precision_ignoring_missed(const ConfusionMatrix& matrix){
+
+  // precision
+  double good = 0;
+  double total = 0;
+  for(auto it: matrix.matrix){
+    for(auto it2: it.second){
+      if(it.first == it2.first)
+        good += it2.second;
+      total+=it2.second;
+    }
+  }
+  return good/total*100.0;
 }
 
 void save_confusion_matrix(const ConfusionMatrix& matrix, const std::string& filename){

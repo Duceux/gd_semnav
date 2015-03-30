@@ -149,10 +149,7 @@ bool Graph<Node, Edge>::insert(const edge_type& e){
 template<typename Node, typename Edge>
 std::size_t Graph<Node, Edge>::nb_edges()const
 {
-  std::size_t count3 = 0;
-  for(auto edge: get_edges())
-    count3++;
-  return count3;
+  return ptr_->edges.size();
 }
 
 template<typename Node, typename Edge>

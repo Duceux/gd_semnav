@@ -28,7 +28,7 @@ public:
       return e.parent.type == m_type &&
           e.child.type == m_type;
     else
-      return e.parent.type != m_type ||
+      return e.parent.type != m_type &&
           e.child.type != m_type;
   }
 

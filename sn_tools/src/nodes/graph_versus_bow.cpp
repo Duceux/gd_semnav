@@ -252,16 +252,16 @@ int main( int argc, char** argv )
     std::string filename = "/home/duceux/Desktop/results/bow_study/gstat2.txt";
     std::ofstream file(filename, std::ofstream::app);
     file << threshold << "\t"
-         << mean_score/5 << "\t"
-         << mean_gscore/5 << "\t"
+         << sn::get_precision_ignoring_missed(total) << "\t"
+         << sn::get_precision_ignoring_missed(gtotal) << "\t"
          << mean_size/5 <<  "\t"
          << mean_size_dico/5 << std::endl;
     std::stringstream mfile;
-    mfile << "/home/duceux/Desktop/results/bow_study/matrix_" << threshold << ".txt";
+    mfile << "/home/duceux/Desktop/results/bow_study/matrix_bow.txt";
     sn::save_confusion_matrix(total, mfile.str());
     std::stringstream mfile2;
-    mfile2 << "/home/duceux/Desktop/results/bow_study/gmatrix_" << threshold << ".txt";
-    sn::save_confusion_matrix(gtotal, mfile.str());
+    mfile2 << "/home/duceux/Desktop/results/bow_study/gmatrix_gow.txt";
+    sn::save_confusion_matrix(gtotal, mfile2.str());
   }
   return 0;
 }
