@@ -47,7 +47,7 @@ void load(const fs::path& path, TrackersSet& trackers)
       if (g != NULL){
         trackers.insert(g);
         std::stringstream str;
-        str << path.stem().string() << "_" << g->uid.toNSec();
+        str << path.stem().string() << g->uid.toNSec();
         (*trackers.find(g))->name = str.str();
       }
     }
@@ -206,7 +206,6 @@ int main( int argc, char** argv )
   for(fs::path it: result_set){
     load(source+it.string(), trackers);
     std::cout << "reading: " << it.filename().string() << std::endl;
-    std::string filename = it.filename().string();
   }
   ROS_INFO("nb trackers loaded: %lu ", trackers.size());
 
@@ -337,10 +336,11 @@ int main( int argc, char** argv )
 
     std::string mystr;
     std::cout << "Press enter to continue\n";
-    std::getline (std::cin, mystr);
+    if(!saving)
+      std::getline (std::cin, mystr);
 
     if(saving)
-      save(target+tk->name,
+      save(target+tk->name+".bag",
            seq);
   }
 

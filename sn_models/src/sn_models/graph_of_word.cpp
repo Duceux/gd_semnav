@@ -55,7 +55,7 @@ std::map<std::string, int> GraphOfWord::type_map() const
   return result;
 }
 
-std::string GraphOfWord::type_of(const edge_t &e)const
+std::string GraphOfWord::type_of(const edge_t &e)
 {
   if(e.parent.type < e.child.type)
     return e.parent.type+"-"+e.child.type;
@@ -63,9 +63,21 @@ std::string GraphOfWord::type_of(const edge_t &e)const
     return e.child.type+"-"+e.parent.type;
 }
 
-std::string GraphOfWord::type_of(const node_t &e)const
+std::string GraphOfWord::type_of(const node_t &e)
 {
   return e.key.type;
+}
+
+std::map<std::string, int> GraphOfWord::type_map(const GraphOfWordData &graph)
+{
+  std::map<std::string, int> result;
+  for(node_t w: graph.get_nodes()){
+    result[type_of(w)]++;
+  }
+  for(edge_t w: graph.get_edges()){
+    result[type_of(w)]++;
+  }
+  return result;
 }
 
 GraphOfWord GraphOfWord::merge(const GraphOfWord &l, const GraphOfWord &r)
@@ -77,7 +89,7 @@ GraphOfWord GraphOfWord::merge(const GraphOfWord &l, const GraphOfWord &r)
   else
     gow.name = "Unknown";
 
-  *gow.graph = addition(*l.graph, *r.graph);
+  *gow.graph = graph::addition(*l.graph, *r.graph);
   return gow;
 }
 

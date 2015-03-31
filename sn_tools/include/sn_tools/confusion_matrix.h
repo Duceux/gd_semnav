@@ -32,7 +32,7 @@ ConfusionMatrix confusion_matrix(Truth const& truth,
       std::string arg_max;
       double max_dist = 0.0;
       for(auto it2: truth){
-        double score = sim(it2, it);
+        double score = sim(it, it2);
         if(score >= max_dist){
           arg_max = it2->name;
           max_dist = score;

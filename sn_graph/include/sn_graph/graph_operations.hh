@@ -4,6 +4,7 @@
 #include <sn_graph/graph.hh>
 
 namespace sn {
+namespace graph {
 
 template<typename Graph>
 Graph substraction(const Graph& g1, const Graph& g2){
@@ -88,6 +89,7 @@ Graph difference(const Graph& g1, const Graph& g2){
                         intersection(g1, g2));
 }
 
-}//namespace graphml
+}//graph
+}//sn
 
 #endif // GRAPH_OPERATIONS_HH

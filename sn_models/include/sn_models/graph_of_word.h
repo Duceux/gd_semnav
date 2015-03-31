@@ -33,9 +33,9 @@ struct GraphOfWord{
 
     std::map<std::string, int> type_map()const;
 
-    std::string type_of(edge_t const& e)const;
-    std::string type_of(node_t const& e)const;
-
+    static std::string type_of(edge_t const& e);
+    static std::string type_of(node_t const& e);
+    static std::map<std::string, int> type_map(GraphOfWordData const& graph);
 
     static GraphOfWord merge(GraphOfWord const& l, GraphOfWord const& r);
 };

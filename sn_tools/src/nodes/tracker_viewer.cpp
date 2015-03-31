@@ -142,7 +142,7 @@ int main( int argc, char** argv )
             continue;
         }
         */
-
+/*
       bool flag = false;
       for(int i=tk->detections.size()/2; i<tk->detections.size(); ++i){
         if(sn::l2_norm(tk->detections.front().robot-tk->detections[i].robot) > 1.0){
@@ -157,7 +157,7 @@ int main( int argc, char** argv )
       }
 
 
-      if(tk->detections.size() < 150){
+      if(tk->detections.size() < 50){
         std::cout << "Erasing: " << " " << tk->uid << std::endl;
         it = trackers.erase(it);
         continue;
@@ -176,6 +176,7 @@ int main( int argc, char** argv )
         it = trackers.erase(it);
         continue;
       }
+      */
       ++it;
     }
 
@@ -228,7 +229,8 @@ int main( int argc, char** argv )
         if(det.cloud.data.size() > 0){
           pcl::PointCloud<pcl::PointXYZRGB> tmp;
           pcl::fromROSMsg(det.cloud, tmp);
-          ptcld2.insert(ptcld2.end(), tmp.begin(), tmp.end());
+          if(tmp.size() > ptcld2.size())
+            ptcld2 = tmp;
           has_kinect = true;
         }
 
@@ -241,12 +243,10 @@ int main( int argc, char** argv )
       cloud_pub.publish(cloud);
       parray.header = tk->header;
       poses_pub.publish(parray);
-      ptcld2.insert(ptcld2.end(), ptcld.begin(), ptcld.end());
-      pcl::toROSMsg(ptcld2, cloud);
-      cloud.header = tk->header;
-      kinect_pub.publish(cloud);
-
-
+      sensor_msgs::PointCloud2 cloud2;
+      pcl::toROSMsg(ptcld2, cloud2);
+      cloud2.header = tk->header;
+      kinect_pub.publish(cloud2);
 
       std::string mystr;
       try {

@@ -18,14 +18,14 @@ typedef sn_msgs::Descriptor Descriptor;
 typedef std::vector<Sequence::Ptr> VSeq;
 namespace fs = boost::filesystem;
 
-void load(const std::string& filename, VSeq& trackers)
+void load(const fs::path& path, VSeq& trackers)
 {
-  std::cout << "opening: " << filename << std::endl;
+  std::cout << "opening: " << path << std::endl;
   rosbag::Bag bag;
   boost::smatch match;
-  boost::regex e ("([^0-9]+)_");
+  boost::regex e ("([^0-9]+)");
   try{
-    bag.open(filename, rosbag::bagmode::Read);
+    bag.open(path.string(), rosbag::bagmode::Read);
     std::vector<std::string> topics;
     topics.push_back(std::string("sequence"));
 
@@ -34,8 +34,9 @@ void load(const std::string& filename, VSeq& trackers)
     for(auto m: view){
       Sequence::Ptr g = m.instantiate<sn_msgs::DescriptorSequence>();
       if (g != NULL){
-        boost::regex_search(g->name,match,e);
+        boost::regex_search(path.stem().string(),match,e);
         g->name = match[0];
+        std::cout << g->name << std::endl;
         trackers.push_back(g);
       }
     }
@@ -224,7 +225,7 @@ int main( int argc, char** argv )
   }
 
   {
-    std::cout << "intersection_size";
+    std::cout << "intersection_size" << std::endl;
     auto gfunc = sn::comparison::intersection_size(sn::no_type());
     auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
     std::cout << sn::get_precision(matrix) << std::endl;
@@ -234,7 +235,7 @@ int main( int argc, char** argv )
     sn::save_confusion_matrix(matrix, folder+"intersection_size.txt");
   }
   {
-    std::cout << "intersection_union_size";
+    std::cout << "intersection_union_size" << std::endl;
     auto gfunc = sn::comparison::intersection_union_size(sn::no_type());
     auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
     std::cout << sn::get_precision(matrix) << std::endl;
@@ -244,7 +245,7 @@ int main( int argc, char** argv )
     sn::save_confusion_matrix(matrix, folder+"intersection_union_size.txt");
   }
   {
-    std::cout << "max_component_size";
+    std::cout << "max_component_size" << std::endl;
     auto gfunc = sn::comparison::max_component_size(sn::no_type());
     auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
     std::cout << sn::get_precision(matrix) << std::endl;
@@ -252,6 +253,36 @@ int main( int argc, char** argv )
     file << "max_component_size\t" << sn::get_precision(matrix) << "\t"
          << sn::get_precision_ignoring_missed(matrix)<< std::endl;
     sn::save_confusion_matrix(matrix, folder+"max_component_size.txt");
+  }
+  {
+    std::cout << "nb modalities" << std::endl;
+    auto gfunc = sn::comparison::modalities_match(sn::no_type());
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "modalities" << "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"modalities.txt");
+  }
+  {
+    std::cout << "inclusion" << std::endl;
+    auto gfunc = sn::comparison::inclusion(sn::no_type());
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "inclusion" << "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"inclusion.txt");
+  }
+  {
+    std::cout << "joint" << std::endl;
+    auto gfunc = sn::comparison::joint_modalities_intersection(sn::no_type());
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "joint" << "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"joint.txt");
   }
   return 0;
 }
