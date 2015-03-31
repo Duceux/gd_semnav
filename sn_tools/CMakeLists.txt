@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     sn_dictionary
     sn_models
     visualization_msgs
+    sn_graph_learning
 )
 
 ## System dependencies are found with CMake's conventions

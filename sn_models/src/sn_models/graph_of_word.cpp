@@ -68,4 +68,17 @@ std::string GraphOfWord::type_of(const node_t &e)const
   return e.key.type;
 }
 
+GraphOfWord GraphOfWord::merge(const GraphOfWord &l, const GraphOfWord &r)
+{
+  GraphOfWord gow;
+  gow.uid = ros::Time(ros::WallTime::now().toSec());
+  if(l.name == r.name)
+    gow.name = l.name;
+  else
+    gow.name = "Unknown";
+
+  *gow.graph = addition(*l.graph, *r.graph);
+  return gow;
 }
+
+}//sn

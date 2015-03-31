@@ -29,6 +29,7 @@ struct GraphOfWord{
     void print()const;
 
     int nb_words()const{return graph->nb_nodes();}
+    int size()const{return graph->size();}
 
     std::map<std::string, int> type_map()const;
 
@@ -36,6 +37,7 @@ struct GraphOfWord{
     std::string type_of(node_t const& e)const;
 
 
+    static GraphOfWord merge(GraphOfWord const& l, GraphOfWord const& r);
 };
 
 typedef GraphOfWord::Ptr GraphOfWordPtr;

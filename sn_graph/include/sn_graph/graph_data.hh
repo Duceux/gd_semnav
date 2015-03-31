@@ -83,8 +83,8 @@ struct SimpleEdge{
   typedef SimpleEdge<Key, Directed> self_type;
 
 
-  const Key parent;
-  const Key child;
+  Key parent;
+  Key child;
   static const bool directed = Directed;
 
   SimpleEdge(Key const& p, Key const& c):
@@ -103,12 +103,14 @@ struct SimpleEdge{
   bool operator !=(self_type const& other)const{
     return !(*this == other);
   }
-
-  self_type opposed()const{
-    return self_type(child, parent);
-  }
-
 };
+
+template<typename Edge>
+Edge make_opposed(Edge const& e){
+  Edge res(e);
+  std::swap(res.child, res.parent);
+  return res;
+}
 
 template<typename Key, bool D>
 std::ostream& operator<< (std::ostream &out, const SimpleEdge<Key, D> &e)

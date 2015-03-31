@@ -27,14 +27,14 @@ Graph MaximumSpanningTree(const Graph& input, DistF func, bool sym=true){
       auto n2 = *it;
       if(visited.count(n2.key)>0)
         continue;
-      double dist = func(n1.val, n2.val);
+      double dist = func(n1, n2);
       if(best < dist){
         best = dist;
         argb = it;
         dir = true;
       }
       if(!sym){
-        dist = func(n2.val, n1.val);
+        dist = func(n2, n1);
         if(best < dist){
           best = dist;
           argb = it;
@@ -45,9 +45,9 @@ Graph MaximumSpanningTree(const Graph& input, DistF func, bool sym=true){
     if(best>-1.0){
       output.insert(*argb);
       if(dir)
-        output.insert(n1.key, argb->key, best);
+        output.insert_edge(n1.key, argb->key, best);
       else
-        output.insert(argb->key, n1.key, best);
+        output.insert_edge(argb->key, n1.key, best);
     }
   }
 

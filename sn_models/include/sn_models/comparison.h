@@ -9,16 +9,17 @@ namespace comparison {
 
 struct base{
   std::shared_ptr<no_type> m_filter;
-
   template<typename F>
   base(F const& f):m_filter(new functor_wrapper<F>(f)){}
 
+
   virtual double operator()(const GraphOfWord::Ptr &l,
-                            const GraphOfWord::Ptr &r)const{return 0.0;}
+                            const GraphOfWord::Ptr &r)const = 0;
+
 };
 
 
-struct intersection_size: public base{
+struct intersection_size: base{
   template<typename F>
   intersection_size(F const& f):base(f){}
 
@@ -29,6 +30,7 @@ struct intersection_size: public base{
                             filter(*r->graph, *m_filter, *m_filter));
     return res.size();
   }
+
 };
 
 struct intersection_union_size: public intersection_size{
@@ -82,6 +84,19 @@ struct max_component_size: public intersection_size{
                             const GraphOfWord::Ptr &r)const{
     return get_max_connected_components(intersection(filter(*l->graph, *m_filter, *m_filter),
                         filter(*r->graph, *m_filter, *m_filter))).size();
+  }
+};
+
+struct inclusion: public intersection_size{
+  template<typename F>
+  inclusion(F const& f):intersection_size(f){}
+
+
+  virtual double operator()(const GraphOfWord::Ptr &l,
+                            const GraphOfWord::Ptr &r)const{
+    auto res = intersection(filter(*l->graph, *m_filter, *m_filter),
+                            filter(*r->graph, *m_filter, *m_filter));
+    return (double)res.size()/r->size();
   }
 };
 

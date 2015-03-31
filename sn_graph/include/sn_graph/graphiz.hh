@@ -4,7 +4,7 @@
 #include <fstream>
 
 namespace sn {
-namespace graph{
+namespace graph {
 
 template <typename Graph, typename PrintNode, typename PrintEdge>
 void graphiz_save(const Graph& graph, const std::string& filename, PrintNode op1, PrintEdge op2)
@@ -21,13 +21,10 @@ void graphiz_save(const Graph& graph, const std::string& filename, PrintNode op1
        << "clusters: " << get_connected_components(graph).size() << "\";\n";
 
   for(const auto& node: graph.get_nodes())
-    file << "\"" << node.key << "\"" <<  op1(node) << "\n";
+    file << op1(node) << "\n";
 
   for(const auto& edge: graph.get_edges()){
-    if(graph.is_directed())
-      file << "\"" << edge.parent << "\"" << "->" << "\""<<  edge.child<< "\"" << op2(edge) << "\n";
-    else
-      file << "\"" << edge.parent << "\"" << "--"<< "\"" << edge.child<< "\"" << op2(edge) << "\n";
+      file << op2(edge) << "\n";
   }
 
   file << "\n";
@@ -65,7 +62,8 @@ void graphiz_save(const Graph& graph, const std::string& filename, PrintNode op1
   file.close();
 }
 
-}
-}
+}//sn
+}//graph
+
 
 #endif // GRAPHIZ_HH

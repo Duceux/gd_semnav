@@ -80,9 +80,9 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES sn_graph_learning
-#  CATKIN_DEPENDS roscpp sn_graph sn_models
+  INCLUDE_DIRS include
+  LIBRARIES lib${PROJECT_NAME}
+  CATKIN_DEPENDS roscpp sn_graph sn_models
 #  DEPENDS system_lib
 )
 
@@ -97,6 +97,19 @@ add_definitions(-std=c++11)
 include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+)
+
+
+## Declare a cpp library
+file(
+        GLOB_RECURSE
+        SRC_LIST
+        src/${PROJECT_NAME}/* include/${PROJECT_NAME}/*
+)
+add_library(lib${PROJECT_NAME} ${SRC_LIST})
+target_link_libraries(
+    lib${PROJECT_NAME}
+    ${catkin_LIBRARIES}
 )
 
 

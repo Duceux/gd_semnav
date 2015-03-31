@@ -139,8 +139,8 @@ bool Graph<Node, Edge>::insert(const edge_type& e){
   ptr_->out_edges[e.parent].insert(e);
   ptr_->in_edges[e.child].insert(e);
   if(!ptr_->directed){
-    ptr_->out_edges[e.child].insert(e.opposed());
-    ptr_->in_edges[e.parent].insert(e.opposed());
+    ptr_->out_edges[e.child].insert(make_opposed(e));
+    ptr_->in_edges[e.parent].insert(make_opposed(e));
   }
   return true;
 }
