@@ -1,0 +1,6 @@
+<launch>
+  <arg name="extractor_params" default="$(find sn_features)/param/params.yaml"/>
+  <rosparam file="$(arg extractor_params)" command="load" />
+  <node name="descriptor_time" pkg="sn_tools" type="sn_tools_descriptor_time" output="screen">
+  </node>
+</launch>
