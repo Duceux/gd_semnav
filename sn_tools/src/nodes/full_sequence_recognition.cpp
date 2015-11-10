@@ -109,7 +109,7 @@ int main( int argc, char** argv )
 
   std::string source;
   ros::param::param<std::string>("~source_dir", source,
-                                 "/home/duceux/Desktop/phd-dataset/trackers/");
+                                 "/home/robotic/Desktop/phd-dataset/ppld_sequence/");
   fs::path sourceDir(source);
   fs::directory_iterator end_iter;
   typedef std::set<fs::path> result_set_t;
@@ -137,14 +137,17 @@ int main( int argc, char** argv )
 
   ROS_INFO("nb sequences loaded: %lu ", trackers.size());
 
-  for(double threshold=0.1; threshold<=0.4; threshold+=0.1){
+
+  for(double threshold=0.01; threshold<=0.4; threshold+=0.01){
 
     double mean_score = 0;
     double mean_size = 0;
     double mean_size_dico = 0;
     sn::ConfusionMatrix total;
+    ros::Time big_tic = ros::Time::now();
 
-    for(int i=0; i<10; i++){
+    for(int i=0; i<5; i++){
+      ros::Time tic = ros::Time::now();
 
       sn::Dictionary<sn::FastGetter> dicos;
       dicos.set("laser", threshold, sn::Distance(sn::symmetric_chi2_distance));
@@ -201,7 +204,7 @@ int main( int argc, char** argv )
           if(des.type == "laser")
             graph_ptr->add(dicos.get(des));
         }
-        graph_ptr->print();
+//        graph_ptr->print();
         mean_sizel += graph_ptr->nb_words();
         graphs.push_back(graph_ptr);
       }
@@ -215,14 +218,16 @@ int main( int argc, char** argv )
       std::cout << "Bow Intersection\n";
       auto func = sn::BowIntersection();
       auto matrix = sn::confusion_matrix(truth, test, func);
+      ros::Duration time = ros::Time::now() - tic;
       std::cout << sn::get_precision(matrix) << std::endl;
       sn::print(matrix);
-      std::string filename = "/home/duceux/Desktop/results/bow_study/stat.txt";
+      std::string filename = "/home/robotic/Desktop/results/bow_study/stat.txt";
       std::ofstream file(filename, std::ofstream::app);
       file << dicos.size("laser") << "\t"
            << dicos.thresholds["laser"] << "\t"
            << sn::get_precision(matrix) <<  "\t"
-           << mean_sizel << std::endl;
+           << mean_sizel << "\t"
+           << time.toSec() << std::endl;
 
       /*
   std::cout << "Intersection\n";
@@ -292,14 +297,16 @@ int main( int argc, char** argv )
       total += matrix;
     }
 
-    std::string filename = "/home/duceux/Desktop/results/bow_study/stat2.txt";
+    ros::Duration big_time = ros::Time::now() - big_tic;
+    std::string filename = "/home/robotic/Desktop/results/bow_study/stat2.txt";
     std::ofstream file(filename, std::ofstream::app);
     file << threshold << "\t"
          << mean_score/5 << "\t"
          << mean_size/5 <<  "\t"
-         << mean_size_dico/5 << std::endl;
+         << mean_size_dico/5 << "\t"
+         << big_time.toSec()/5.0 << std::endl;
     std::stringstream mfile;
-    mfile << "/home/duceux/Desktop/results/bow_study/matrix_" << threshold << ".txt";
+    mfile << "/home/robotic/Desktop/results/bow_study/matrix_" << threshold << ".txt";
     std::map<int, std::string> mapping{
       {0, "white_trash_"},
       {1, "brown_trash_"},

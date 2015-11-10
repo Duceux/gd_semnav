@@ -38,7 +38,10 @@
 #include <sn_features/histogram_distance.h>
 #include <sn_features/pfh_extractor.h>
 #include <sn_features/image_extractor.h>
-
+#include <sn_tools/io.h>
+#include <sn_models/bag_of_word.h>
+#include <sn_models/graph_of_word.h>
+#include <sn_graph/graphiz.hh>
 
 typedef sn_msgs::DescriptorSequence Sequence;
 typedef sn_msgs::Descriptor Descriptor;
@@ -46,34 +49,27 @@ typedef std::vector<Sequence::Ptr> VSeq;
 namespace fs = boost::filesystem;
 namespace sngl = sn::graph_learning;
 
-void load(const std::string& filename, VSeq& trackers)
-{
-  std::cout << "opening: " << filename << std::endl;
-  rosbag::Bag bag;
-  boost::smatch match;
-  boost::regex e ("([^0-9]+)_");
-  try{
-    bag.open(filename, rosbag::bagmode::Read);
-    std::vector<std::string> topics;
-    topics.push_back(std::string("sequence"));
-
-    rosbag::View view(bag, rosbag::TopicQuery(topics));
-
-    for(auto m: view){
-      Sequence::Ptr g = m.instantiate<sn_msgs::DescriptorSequence>();
-      if (g != NULL){
-        trackers.push_back(g);
-      }
-    }
-    bag.close();
-  }
-  catch(const std::exception& e){
-    ROS_ERROR("%s", e.what());
-  }
-  ROS_INFO("nb sequences loaded: %lu ", trackers.size());
-
+std::string print_node(const sn::node_t &node){
+  std::stringstream str;
+  str << std::setprecision(2);
+  str << "[ label = \"" <<  node.key.type << "\n" << node.key.label
+      << "\" ];";
+  return str.str();
 }
 
+std::string print_edge(const sn::edge_t &e){
+  return "";
+}
+
+std::string print_graph(sn::GraphOfWordData const& graph) {
+  std::stringstream str;
+  str << "start = rand;\n";
+  str << "overlap=false;\n";
+  str << "splines=true;\n";
+  str << "edge [fontsize=8];\n";
+  str << "node [fontsize=10];\n";
+  return str.str();
+}
 
 int main( int argc, char** argv )
 {
@@ -82,7 +78,7 @@ int main( int argc, char** argv )
 
   std::string source;
   ros::param::param<std::string>("~source_dir", source,
-                                 "/home/duceux/Desktop/phd-dataset/trackers/");
+                                 "/home/robotic/Desktop/phd-dataset/sequence/");
   fs::path sourceDir(source);
   fs::directory_iterator end_iter;
   typedef std::set<fs::path> result_set_t;
@@ -98,20 +94,19 @@ int main( int argc, char** argv )
       }
     }
   }else if( fs::exists(sourceDir) && fs::is_regular_file(sourceDir))
-    result_set.insert(sourceDir.filename());
+    result_set.insert("");
 
   VSeq trackers;
 
   for(fs::path it: result_set){
-    load(source+it.string(), trackers);
+    sn::tools::load(source+it.string(), trackers, "sequence");
     std::cout << "reading: " << it.filename().string() << std::endl;
-    std::string filename = it.filename().string();
   }
 
   ROS_INFO("nb sequences loaded: %lu ", trackers.size());
 
   sn::Dictionary<sn::FastGetter> dicos;
-  dicos.set("laser", 0.1, sn::Distance(sn::symmetric_chi2_distance));
+  dicos.set("laser", 0.2, sn::Distance(sn::symmetric_chi2_distance));
   dicos.set("pfh", 0.05, sn::Distance(sn::symmetric_chi2_distance));
   dicos.set("size", 0.01, sn::Distance(sn::euclidean_distance));
   dicos.set("color", 1.5, sn::Distance(sn::symmetric_chi2_distance));
@@ -138,10 +133,10 @@ int main( int argc, char** argv )
 
   std::map<std::string, double> height_map;
   height_map["laser"] = 0.0;
-  height_map["pfh"] = 0.0;
-  height_map["size"] = 0.02;
-  height_map["color"] = 0.02;
-  height_map["tbgr"] = 0.04;
+  height_map["pfh"] = 0.20;
+  height_map["size"] = 0.40;
+  height_map["color"] = 0.60;
+  height_map["tbgr"] = 0.80;
 
   std::map<sn::Word, std::array<float, 3>> mColors;
 
@@ -158,10 +153,16 @@ int main( int argc, char** argv )
     marker_pub.publish(marray);
     if(marray.markers.size() < seq->descriptors.size()*2)
       marray.markers.resize(seq->descriptors.size()*2);
+
+    sn::BagOfWord::Ptr bow = sn::BagOfWord::create();
+    sn::GraphOfWord::Ptr gow = sn::GraphOfWord::create();
     for(int d=0; d<seq->descriptors.size(); d++)
     {
       const sn_msgs::Descriptor& des = seq->descriptors[d];
       sn::Word w = dicos.get(des);
+
+      bow->add(w);
+      gow->add(w);
 
       visualization_msgs::Marker marker;
       marker.type = visualization_msgs::Marker::CYLINDER;
@@ -169,7 +170,7 @@ int main( int argc, char** argv )
       auto label = w;
       if(mColors.count( label ) == 0){
         static std::default_random_engine generator;
-        static std::uniform_real_distribution<float> distribution(0.3f,0.7f);
+        static std::uniform_real_distribution<float> distribution(0.0f,0.5f);
         static auto random = std::bind ( distribution, generator );
         mColors[label][0] = random();
         mColors[label][1] = random();
@@ -177,9 +178,9 @@ int main( int argc, char** argv )
       }
       marker.pose.position.x = des.robot.x;
       marker.pose.position.y = des.robot.y;
-      marker.pose.position.z = height_map[des.type];
-      marker.scale.x = 0.05;
-      marker.scale.y = 0.05;
+      marker.pose.position.z = 0.0 + height_map[des.type];
+      marker.scale.x = 0.1;
+      marker.scale.y = 0.1;
       marker.scale.z = 0.01;
       marker.color.r = mColors[label][0];
       marker.color.g = mColors[label][1];
@@ -199,6 +200,12 @@ int main( int argc, char** argv )
 
     marker_pub.publish(marray);
     kinect_pub.publish(seq->cloud);
+
+    bow->print();
+    gow->print();
+
+    sn::graph::graphiz_save(gow->get_graph(), "/home/robotic/Dropbox/phd_duceux/images/captures/gow.gv",
+                            print_node, print_edge, print_graph);
 
     std::string mystr;
     std::cout << "Press enter to continue\n";

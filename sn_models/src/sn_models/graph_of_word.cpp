@@ -3,7 +3,11 @@
 namespace sn {
 
 GraphOfWord::GraphOfWord():
-  graph(new GraphOfWordData)
+  graph(new GraphOfWordData),
+  merged(1),
+  score(0),
+  visited(0),
+  labeled(false)
 {}
 
 void GraphOfWord::add(const Word &w)
@@ -90,6 +94,9 @@ GraphOfWord GraphOfWord::merge(const GraphOfWord &l, const GraphOfWord &r)
     gow.name = "Unknown";
 
   *gow.graph = graph::addition(*l.graph, *r.graph);
+  gow.merged = l.merged+r.merged;
+  gow.visited = 0;
+  gow.labeled = l.labeled && r.labeled;
   return gow;
 }
 

@@ -27,6 +27,93 @@ TEST(Graph, UndirectedSimpleNodeAndSimpleEdge)
 
 }
 
+TEST(Graph, UndirectedDetachNode)
+{
+    Graph<SimpleNode<std::string>,
+            SimpleEdge<std::string, false>> graph;
+
+    graph.insert_node("coucou");
+    graph.insert_node("hello");
+    graph.insert_edge("hello", "coucou");
+
+    graph.detach("coucou");
+    EXPECT_TRUE(graph.has("coucou"));
+    EXPECT_EQ(graph.nb_out_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_edges_of("coucou"), 0);
+    EXPECT_TRUE(graph.has("hello"));
+    EXPECT_EQ(graph.nb_out_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_edges_of("hello"), 0);
+    graph.remove("coucou");
+    EXPECT_FALSE(graph.has("coucou"));
+    graph.remove("hello");
+    graph.detach("hello");
+    EXPECT_FALSE(graph.has("hello"));
+
+    graph.insert_node("coucou");
+    graph.insert_node("hello");
+    graph.insert_edge("hello", "coucou");
+    graph.detach("hello");
+    EXPECT_TRUE(graph.has("coucou"));
+    EXPECT_EQ(graph.nb_out_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_edges_of("coucou"), 0);
+    EXPECT_TRUE(graph.has("hello"));
+    EXPECT_EQ(graph.nb_out_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_edges_of("hello"), 0);
+    graph.remove("coucou");
+    EXPECT_FALSE(graph.has("coucou"));
+    graph.remove("hello");
+    graph.detach("hello");
+    EXPECT_FALSE(graph.has("hello"));
+}
+
+TEST(Graph, DirectedDetachNode)
+{
+    Graph<SimpleNode<std::string>,
+            SimpleEdge<std::string, true>> graph;
+
+    graph.insert_node("coucou");
+    graph.insert_node("hello");
+    graph.insert_edge("hello", "coucou");
+
+    graph.detach("coucou");
+    EXPECT_TRUE(graph.has("coucou"));
+    EXPECT_EQ(graph.nb_out_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_edges_of("coucou"), 0);
+    EXPECT_TRUE(graph.has("hello"));
+    EXPECT_EQ(graph.nb_out_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_edges_of("hello"), 0);
+    graph.remove("coucou");
+    EXPECT_FALSE(graph.has("coucou"));
+    graph.remove("hello");
+    graph.detach("hello");
+    EXPECT_FALSE(graph.has("hello"));
+
+    graph.insert_node("coucou");
+    graph.insert_node("hello");
+    graph.insert_edge("hello", "coucou");
+    graph.detach("hello");
+    EXPECT_TRUE(graph.has("coucou"));
+    EXPECT_EQ(graph.nb_out_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("coucou"), 0);
+    EXPECT_EQ(graph.nb_edges_of("coucou"), 0);
+    EXPECT_TRUE(graph.has("hello"));
+    EXPECT_EQ(graph.nb_out_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_in_edges_of("hello"), 0);
+    EXPECT_EQ(graph.nb_edges_of("hello"), 0);
+    graph.remove("coucou");
+    EXPECT_FALSE(graph.has("coucou"));
+    graph.remove("hello");
+    graph.detach("hello");
+    EXPECT_FALSE(graph.has("hello"));
+
+}
+
 TEST(Graph, DirectedSimpleNodeAndSimpleEdge)
 {
     Graph<SimpleNode<std::string>,

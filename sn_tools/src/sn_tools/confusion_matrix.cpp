@@ -18,7 +18,7 @@ void save_confusion_matrix(const ConfusionMatrix &matrix, const std::string &fil
 
   for(auto it: mapping){
     for(auto it2: mapping){
-      logger << it.first << "\t" << it2.first << "\t" << matrix.matrix.at(it.second).at(it2.second) << std::endl;
+      logger << it.first << "\t" << it2.first << "\t" << matrix.matrix.at(it2.second).at(it.second) << std::endl;
     }
   }
 }

@@ -49,14 +49,14 @@ point_t toPolar(point_t const& p){
 void pair_of_points(vector_pts_t const& input, vector_pts_t& output){
     output.clear();
     output.reserve(input.size()*(input.size()-1));
-    for(uint i=0; i<input.size()-1; ++i)
-        for(uint j=i; j<input.size(); ++j)
+    for(uint i=0; i<input.size(); ++i)
+        for(uint j=0; j<input.size(); ++j)
         {
             if(i==j)continue;
             point_t p = input[j]-input[i];
             if(std::isnan(p.x) || std::isnan(p.y))continue;
             output.push_back(p);
-            //            output.push_back(create(-p.y,p.x,0.0));
+            output.push_back(create(-p.y,p.x,0.0));
         }
 }
 
@@ -89,7 +89,7 @@ void triangle_points(vector_pts_t const& input, vector_pts_t& output)
 double compute_angle_ref(vector_pts_t const& input){
     // compute angle and histogram
     // compute histogram
-    int nbins = 100;
+    int nbins = 128;
     float ranges[] = {-M_PI, M_PI};
     Histogram<int, float> angle_histo(nbins, CIRCULAR, ranges[0], ranges[1]);
     size_t size = input.size();
@@ -160,8 +160,40 @@ void TriangleLaserExtractor::set_params(const std::map<std::string, std::string>
         rho_bin_size = boost::lexical_cast<double>(params.at("rho_bin_size"));
     } catch( boost::bad_lexical_cast const& e) {
         std::cout << e.what() << std::endl;
-    }
+  }
 }
 
+void PairOfPointsLaserExtractor::set_params(const std::map<std::string, std::string> &params)
+{
+  try {
+      type = params.at("type");
+      sampling_resolution = boost::lexical_cast<double>(params.at("sampling_resolution"));
+      theta_bin_size = M_PI*2.0/boost::lexical_cast<double>(params.at("theta_bin_nb"));
+      rho_bin_size = boost::lexical_cast<double>(params.at("rho_bin_size"));
+  } catch( boost::bad_lexical_cast const& e) {
+      std::cout << e.what() << std::endl;
+}
+}
+
+descriptor_t PairOfPointsLaserExtractor::operator ()(const detection_t &data)
+{
+    descriptor_t res = Extractor::operator ()(data);
+    res.data = (*this)(data.points);
+    return res;
+}
+
+std::vector<double> PairOfPointsLaserExtractor::operator ()(vector_pts_t const& data){
+    vector_pts_t resampled, ppts, ppts_reoriented;
+    up_sampling(data, resampled, sampling_resolution);
+    pair_of_points(resampled, ppts);
+    double ref = compute_angle_ref(ppts);
+    ppts_reoriented = sn::transform(ppts, create_pose(0,0,ref));
+    PolarHistogram descriptor(theta_bin_size, rho_bin_size);
+    for(auto p: ppts_reoriented)
+        descriptor.add(p);
+    descriptor.normalize(ppts_reoriented.size());
+    histogram = descriptor;
+    return descriptor.get_feature();
+}
 
 }

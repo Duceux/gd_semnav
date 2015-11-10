@@ -1,3 +1,4 @@
 pfh_ex: { nbrPointsPairInHist: "10000", nbrBinsAngles: "5", nbrBinsDist: "5", type: "pfh" }
 laser_ex: { sampling_resolution: "0.001", smoothing_factor: "50", downsampling_factor: "50", theta_bin_nb: "12", rho_bin_size: "0.1", type: "laser"}
 tbgr_ex: {type: "tbgr", int_feature_vector_size: "16"}
+ppld_ex: { sampling_resolution: "0.003", theta_bin_nb: "11", rho_bin_size: "0.085", type: "laser"}

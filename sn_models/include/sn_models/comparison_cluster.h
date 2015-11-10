@@ -13,8 +13,8 @@ struct comparison_to_cluster{
   };
 
   typedef std::vector<score_t> result_t;
-  result_t operator ()(const GraphOfWordPtr& cand,
-                       const std::vector<GraphOfWordPtr>& models);
+  virtual result_t operator ()(const GraphOfWordPtr& cand,
+                       const std::vector<GraphOfWordPtr>& models) = 0;
 };
 
 }

@@ -19,6 +19,12 @@ struct GraphOfWord{
 
     std::string name;
     ros::Time uid;
+    uint merged;
+    double score;
+    int visited;
+    bool labeled;
+
+    GraphOfWordData& get_graph(){return *graph;}
 
     GraphOfWordDataPtr graph;
 

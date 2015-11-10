@@ -38,6 +38,9 @@ public:
     std::swap(ptr_, oth.ptr_);
   }
 
+  // Graph
+  void clear();
+
   //operators
   const node_type& operator()(const key_type& key)const{return at(key);}
   const node_type& operator()(const key_type& p, const key_type& c)const{return at(p, c);}

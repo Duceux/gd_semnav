@@ -38,7 +38,19 @@ struct TriangleLaserExtractor: public Extractor{
 
     void set_params(std::map<std::string, std::string> const& params);
     bool is_valid(detection_t const& det)const{return det.points.size()>0;}
+};
 
+
+struct PairOfPointsLaserExtractor: public Extractor {
+  double sampling_resolution;
+  double theta_bin_size;
+  double rho_bin_size;
+  PolarHistogram histogram;
+  feature_t operator ()(vector_pts_t const& data);
+  descriptor_t operator ()(detection_t const& data);
+  PolarHistogram get_histogram(){return histogram;}
+  void set_params(std::map<std::string, std::string> const& params);
+  bool is_valid(detection_t const& det)const{return det.points.size()>0;}
 };
 
 }

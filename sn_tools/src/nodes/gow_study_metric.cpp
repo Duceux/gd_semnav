@@ -200,9 +200,9 @@ int main( int argc, char** argv )
   std::vector<sn::GraphOfWord::Ptr> gtest;
   split_truth_is_biggest(graphs, gtruth, gtest);
 
-  std::string filename = "/home/duceux/Desktop/results/metric_study/score.txt";
+  std::string filename = "/home/robotic/Desktop/results/metric_study/score.txt";
   std::ofstream file(filename, std::ofstream::app);
-  std::string folder = "/home/duceux/Desktop/results/metric_study/";
+  std::string folder = "/home/robotic/Desktop/results/metric_study/";
   file << "dico_laser\t" << dicos.size("laser") << std::endl;
   file << "dico_pfh\t" << dicos.size("pfh") << std::endl;
   file << "dico_color\t" << dicos.size("color") << std::endl;
@@ -224,6 +224,26 @@ int main( int argc, char** argv )
     file << "average:\t" << it.first << "\t" << (double)it.second/graphs.size() << std::endl;
   }
 
+  {
+    std::cout << "tf_idf" << std::endl;
+    auto gfunc = sn::comparison::tf_idf(sn::no_type(), gtruth);
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "tf_idf"<< "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"tf_idf.txt");
+  }
+  {
+    std::cout << "consensus" << std::endl;
+    auto gfunc = sn::comparison::consensus(sn::no_type(), gtruth);
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "consensus"<< "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"consensus.txt");
+  }
   {
     std::cout << "intersection_size" << std::endl;
     auto gfunc = sn::comparison::intersection_size(sn::no_type());
@@ -283,6 +303,26 @@ int main( int argc, char** argv )
     file << "joint" << "\t" << sn::get_precision(matrix) << "\t"
          << sn::get_precision_ignoring_missed(matrix)<< std::endl;
     sn::save_confusion_matrix(matrix, folder+"joint.txt");
+  }
+  {
+    std::cout << "normalized_joint" << std::endl;
+    auto gfunc = sn::comparison::normalized_joint(sn::no_type());
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "normalized_joint" << "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"normalized_joint.txt");
+  }
+  {
+    std::cout << "per modalities" << std::endl;
+    auto gfunc = sn::comparison::per_modalities_inclusion(sn::no_type());
+    auto matrix = sn::confusion_matrix(gtruth, gtest, gfunc);
+    std::cout << sn::get_precision(matrix) << std::endl;
+    sn::print(matrix);
+    file << "per_mod" << "\t" << sn::get_precision(matrix) << "\t"
+         << sn::get_precision_ignoring_missed(matrix)<< std::endl;
+    sn::save_confusion_matrix(matrix, folder+"permod.txt");
   }
   return 0;
 }

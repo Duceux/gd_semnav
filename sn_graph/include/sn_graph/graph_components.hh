@@ -16,12 +16,12 @@ std::vector<Graph<N, E>> get_connected_components(Graph<N, E> const& g)
     if(visited.insert(node).second == false)return;
     graph.insert(node);
     if(g.nb_out_edges_of(node) > 0)
-      for(auto edge: g.get_out_edges(node)){
+      for(const auto& edge: g.get_out_edges(node)){
             dfs(graph, g.at(edge.child));
             graph.insert(edge);
         }
     if(g.nb_in_edges_of(node) > 0)
-      for(auto edge: g.get_in_edges(node)){
+      for(const auto& edge: g.get_in_edges(node)){
             dfs(graph, g.at(edge.parent));
             graph.insert(edge);
         }
@@ -29,7 +29,7 @@ std::vector<Graph<N, E>> get_connected_components(Graph<N, E> const& g)
 
   std::vector<Graph<N, E>> result;
 
-  for(auto node: g.get_nodes()){
+  for(const auto& node: g.get_nodes()){
     if(visited.count(node) == 0){
       Graph<N, E> comp;
       dfs(comp, node);

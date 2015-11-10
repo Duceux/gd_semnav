@@ -16,6 +16,8 @@
 #include <sn_models/comparison_cluster.h>
 #include <sn_graph_learning/cluster_holder.h>
 #include <sn_graph_learning/clustering.h>
+#include <sn_tools/io.h>
+#include <sn_tools/stringstream.h>
 
 typedef sn_msgs::DescriptorSequence Sequence;
 typedef sn_msgs::Descriptor Descriptor;
@@ -23,95 +25,20 @@ typedef std::vector<Sequence::Ptr> VSeq;
 namespace fs = boost::filesystem;
 namespace sngl = sn::graph_learning;
 
-void load(const std::string& filename, VSeq& trackers)
-{
-  std::cout << "opening: " << filename << std::endl;
-  rosbag::Bag bag;
-  boost::smatch match;
-  boost::regex e ("([^0-9]+)_");
-  try{
-    bag.open(filename, rosbag::bagmode::Read);
-    std::vector<std::string> topics;
-    topics.push_back(std::string("sequence"));
-
-    rosbag::View view(bag, rosbag::TopicQuery(topics));
-
-    for(auto m: view){
-      Sequence::Ptr g = m.instantiate<sn_msgs::DescriptorSequence>();
-      if (g != NULL){
-        boost::regex_search(g->name,match,e);
-        g->name = match[0];
-        trackers.push_back(g);
-      }
-    }
-    bag.close();
-  }
-  catch(const std::exception& e){
-    ROS_ERROR("%s", e.what());
-  }
-  ROS_INFO("nb sequences loaded: %lu ", trackers.size());
-
-}
-
-typedef std::unordered_set<sn::Word> BinaryBagOfWord;
-typedef std::vector<sn::GraphOfWord::Ptr> GraphPtrVector;
-template <typename ModelContainer>
-void split_truth_is_biggest(ModelContainer const& source, ModelContainer& truth, ModelContainer& test){
-
-  std::unordered_map<std::string, typename ModelContainer::value_type> tmp_truth;
-  for(auto g: source){
-    if(tmp_truth.count(g->name) == 0){
-      tmp_truth[g->name] = g;
-    }
-    else if(tmp_truth[g->name]->nb_words() < g->nb_words())
-      tmp_truth[g->name] = g;
-  }
-
-  for(auto it: tmp_truth)
-    truth.push_back(it.second);
-
-  for(auto g: source)
-    if(tmp_truth[g->name]->uid != g->uid)
-      test.push_back(g);
-}
-
-typedef std::unordered_set<sn::Word> BinaryBagOfWord;
-typedef std::vector<sn::GraphOfWord::Ptr> GraphPtrVector;
-template <typename ModelContainer>
-void split_truth_test_are_biggest(ModelContainer const& source, ModelContainer& truth, ModelContainer& test){
-
-  std::unordered_map<std::string, typename ModelContainer::value_type> tmp_truth;
-  for(auto g: source){
-    if(tmp_truth.count(g->name) == 0){
-      tmp_truth[g->name] = g;
-    }
-    else if(tmp_truth[g->name]->nb_words() < g->nb_words())
-      tmp_truth[g->name] = g;
-  }
-
-  std::unordered_map<std::string, typename ModelContainer::value_type> tmp_test;
-  for(auto g: source){
-    if(tmp_truth[g->name]->uid == g->uid)
-      continue;
-    if(tmp_test.count(g->name) == 0){
-      tmp_test[g->name] = g;
-    }
-    else if(tmp_test[g->name]->nb_words() < g->nb_words())
-      tmp_test[g->name] = g;
-  }
-
-  for(auto it: tmp_truth)
-    truth.push_back(it.second);
-
-  for(auto it: tmp_test)
-    test.push_back(it.second);
-}
-
 template<typename ClusterHolder>
 int corruption(ClusterHolder const& holder){
   int total = 0;
   for(auto proto: holder)
     if(proto->name == "Unknown")
+      total++;
+  return total;
+}
+
+template<typename ClusterHolder>
+int solid(ClusterHolder const& holder){
+  int total = 0;
+  for(auto proto: holder)
+    if(proto->name != "Unknown" && proto->merged > 1)
       total++;
   return total;
 }
@@ -144,7 +71,7 @@ int main( int argc, char** argv )
   VSeq trackers;
 
   for(fs::path it: result_set){
-    load(source+it.string(), trackers);
+    sn::tools::load(source+it.string(), trackers, "sequence");
     std::cout << "reading: " << it.filename().string() << std::endl;
     std::string filename = it.filename().string();
   }
@@ -200,50 +127,81 @@ int main( int argc, char** argv )
         return l->name < r->name;
       }
     };
-    std::set<sn::GraphOfWordPtr, lessfunc> reality_check;
-    sngl::VectorHolder<sn::GraphOfWordPtr, decltype(mergefunc)> clusters(mergefunc);
-    auto comfunc = sn::comparison::intersection_union_size(sn::no_type());
-    typedef sngl::Classifier<decltype(clusters), decltype(comfunc)> MyClassifier;
-    MyClassifier classifier(comfunc);
-    typedef sngl::SequentialClustering<MyClassifier> MyClustering;
-    MyClustering clustering(0.1);
-    double error = 0;
-    double total = 0;
 
-    std::ofstream seqfile("/home/robotic/Desktop/seqres.txt");
-    std::cout <<"Nb of models: " << graphs.size() << std::endl;
-    for(auto candidate: graphs){
-      std::cout << "candidate\n";
-      candidate->print();
-      reality_check.insert(candidate);
-      total++;
+    std::string folder = "/home/robotic/Desktop/results/incremental/";
+    //    std::ofstream thfile(sn::StringStream() << folder << "thres.txt", std::ofstream::app);
+    //    thfile << "normalized_joint" << std::endl;
+    //    for(double th=0.0; th<=1.0; th+=0.01)
+    double th = 0.1;
+    {
+      std::set<sn::GraphOfWordPtr, lessfunc> reality_check;
+      sngl::LearningMatrix<sn::GraphOfWordPtr, decltype(mergefunc)> clusters(mergefunc);
+      auto comfunc = sn::comparison::normalized_joint(sn::no_type());
+      typedef sngl::Classifier<decltype(clusters), decltype(comfunc)> MyClassifier;
+      MyClassifier classifier(comfunc);
+      typedef sngl::SequentialClustering<MyClassifier> MyClustering;
+      MyClustering clustering(th);
+      double error = 0;
+      double total = 0;
 
-      classifier.classify(candidate, clusters);
-      clustering.cluster(classifier, clusters, candidate);
+      std::ofstream seqfile(sn::StringStream() << folder << "seqres"  << ".txt");
+      std::cout <<"Nb of models: " << graphs.size() << std::endl;
+      for(auto candidate: graphs){
+        std::cout << "candidate\n";
+        candidate->print();
+        reality_check.insert(candidate);
+        total++;
 
-      if(classifier.size() > 0)
-        if(clusters[classifier.front().second]->name != candidate->name)
+        classifier.classify(candidate, clusters);
+        clustering.cluster(classifier, clusters, candidate);
+
+        if(classifier.size() > 0){
+          if(clusters[classifier.front().second]->name != candidate->name)
+            error++;
+        } else {
           error++;
+        }
 
+        std::cout << "total queries: " << total << std::endl;
+        std::cout << "nb clusters: " << clusters.size() << std::endl;
+        std::cout << "solid: " << solid(clusters) << std::endl;
+        std::cout << "corruption: " << corruption(clusters) << std::endl;
+        std::cout << "real nb: " << reality_check.size() << std::endl;
+        std::cout << "error rate: " << (error-reality_check.size()) << std::endl;
 
-      std::cout << "nb clusters: " << clusters.size() << std::endl;
-      std::cout << "corruption: " << corruption(clusters) << std::endl;
-      std::cout << "real nb: " << reality_check.size() << std::endl;
-      std::cout << "error rate: " << error/total << std::endl;
-      if(classifier.size() > 0)
-        std::cout << "score: " << classifier.front().first << std::endl;
+        seqfile << total << "\t"
+                << clusters.size() << "\t"
+                << solid(clusters) << "\t"
+                << corruption(clusters)  << "\t"
+                << reality_check.size() << "\t"
+                << (error-reality_check.size()) << "\t";
+        seqfile << std::endl;
+      }
 
-      seqfile << clusters.size() << "\t"
-              << corruption(clusters)  << "\t"
-              << reality_check.size() << "\t"
-              << error/total << "\t";
-      if(classifier.size() > 0)
-        seqfile << classifier.front().first << "\t";
-      else
-        seqfile << 0.0 << "\t";
-      seqfile << std::endl;
+      seqfile.close();
+      //      thfile << th << " " << clusters.size() << " " << solid(clusters) << " " << corruption(clusters) << std::endl;
+
+      // produce learning matrix
+      std::ofstream learningmatfile(sn::StringStream() << folder << "learningmat" << ".txt");
+      clusters.rearrange_cluters();
+      std::map<std::string, std::map<int, int>> matrix;
+      const auto& C = clusters.get_clusters();
+      for(unsigned i=0; i<C.size(); ++i){
+        for(auto it: C[i])
+          matrix[it.first][i] = it.second;
+      }
+
+      // print learning matrix
+      unsigned label = 0;
+      for(auto it: matrix){
+        for(unsigned i=0; i<C.size(); ++i)
+          learningmatfile << label << " "
+                          << i << " "
+                          << it.second[i] << std::endl;
+        label++;
+        learningmatfile << std::endl;
+      }
     }
-    seqfile.close();
   }
   return 0;
 }

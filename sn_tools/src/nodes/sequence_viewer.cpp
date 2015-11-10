@@ -157,6 +157,11 @@ int main( int argc, char** argv )
   for(auto it: tbgr_ex_params)
     std::cout << it.first << " " << it.second << std::endl;
 
+  std::map<std::string, std::string> ppld_ex_params;
+  ros::param::get("ppld_ex", ppld_ex_params);
+  for(auto it: ppld_ex_params)
+    std::cout << it.first << " " << it.second << std::endl;
+
   std::map<sn::Word, std::array<float, 3>> mColors;
   sn::Dictionary<sn::FastGetter> dicos;
   dicos.set("laser", 0.4, sn::Distance(sn::symmetric_chi2_distance));
@@ -165,8 +170,10 @@ int main( int argc, char** argv )
   dicos.set("color", 3.0, sn::Distance(sn::symmetric_chi2_distance));
   dicos.set("tbgr", 0.1, sn::Distance(sn::symmetric_chi2_distance));
 
-  sn::TriangleLaserExtractor::Ptr extractor(new sn::TriangleLaserExtractor);
-  extractor->set_params(laser_ex_params);
+//  sn::Extractor::Ptr extractor(new sn::TriangleLaserExtractor);
+//  extractor->set_params(laser_ex_params);
+    sn::Extractor::Ptr extractor(new sn::PairOfPointsLaserExtractor);
+    extractor->set_params(ppld_ex_params);
 
   sn::PFHExtractor::Ptr pfh_ex(new sn::PFHExtractor);
   pfh_ex->set_params(pfh_ex_params);

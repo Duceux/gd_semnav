@@ -13,6 +13,11 @@ void throw_out_of_range(const Key& key){
   throw std::out_of_range (str.str());
 }
 
+template<typename Node, typename Edge>
+void Graph<Node, Edge>::clear() {
+  ptr_ = std::make_shared<data_type>();
+}
+
 
 template<typename Node, typename Edge>
 template<typename... Args>
@@ -28,17 +33,21 @@ bool Graph<Node, Edge>::insert(const node_type& node)
 
 template<typename Node, typename Edge>
 void Graph<Node, Edge>::remove(const key_type& key){
-  detach(key);
   ptr_->nodes.erase(key);
+  detach(key);
 }
 
 template<typename Node, typename Edge>
 void Graph<Node, Edge>::detach(const key_type& key){
   edge_set_type to_remove;
-  auto out = get_out_edges(key);
-  to_remove.insert(out.begin(), out.end());
-  auto in = get_in_edges(key);
-  to_remove.insert(in.begin(), in.begin());
+  if(nb_out_edges_of(key) > 0) {
+    const auto& out = get_out_edges(key);
+    to_remove.insert(out.begin(), out.end());
+  }
+  if(nb_in_edges_of(key) > 0) {
+    const auto& in = get_in_edges(key);
+    to_remove.insert(in.begin(), in.end());
+  }
   ptr_->out_edges.erase(key);
   ptr_->in_edges.erase(key);
   for(Edge e: to_remove){
@@ -47,6 +56,10 @@ void Graph<Node, Edge>::detach(const key_type& key){
       ptr_->out_edges.at(e.child).erase(e);
     if(ptr_->in_edges.count(e.parent) > 0)
       ptr_->in_edges.at(e.parent).erase(e);
+    if(ptr_->out_edges.count(e.parent) > 0)
+      ptr_->out_edges.at(e.parent).erase(e);
+    if(ptr_->in_edges.count(e.child) > 0)
+      ptr_->in_edges.at(e.child).erase(e);
   }
 }
 
@@ -139,6 +152,7 @@ bool Graph<Node, Edge>::insert(const edge_type& e){
   ptr_->out_edges[e.parent].insert(e);
   ptr_->in_edges[e.child].insert(e);
   if(!ptr_->directed){
+    ptr_->edges.insert(make_opposed(e));
     ptr_->out_edges[e.child].insert(make_opposed(e));
     ptr_->in_edges[e.parent].insert(make_opposed(e));
   }

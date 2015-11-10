@@ -3,8 +3,8 @@
   <rosparam file="$(arg extractor_params)" command="load" />
 
   <node name="sequence_viewer" pkg="sn_tools" type="sn_tools_sequence_viewer" output="screen">
-  	<param name="source_dir" type="string" value="/home/duceux/Desktop/phd-dataset/edited_trackers/" />	
-  	<param name="target_dir" type="string" value="/home/duceux/Desktop/phd-dataset/sequence/" />	
+        <param name="source_dir" type="string" value="/home/robotic/Desktop/phd-dataset/edited_kdb_trackers/" />
+        <param name="target_dir" type="string" value="/home/robotic/Desktop/phd-dataset/ppld_sequence/" />
    	<param name="edit_all" type="bool" value="true" />	
    	<param name="saving" type="bool" value="true" />	
   </node>

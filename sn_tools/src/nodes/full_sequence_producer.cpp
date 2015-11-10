@@ -82,7 +82,7 @@ int main( int argc, char** argv )
 
 
     TrackersSet trackers;
-    load("/home/robotic/Desktop/datasets/trackers/all.bag", trackers);
+    load("/home/robotic/Desktop/datasets/kdb_trackers/all.bag", trackers);
 
 
     sn::TriangleLaserExtractor extractor;
@@ -136,6 +136,6 @@ int main( int argc, char** argv )
     }
 
 
-    save("/home/robotic/Desktop/datasets/sequences/all.bag", vseq);
+    save("/home/robotic/Desktop/datasets/kdb_sequences/all.bag", vseq);
     return 0;
 }

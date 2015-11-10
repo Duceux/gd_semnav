@@ -9,7 +9,7 @@
 namespace sn {
 
 struct BagOfWord{
-  typedef std::unordered_map<Word, unsigned int> Bag;
+  typedef std::map<Word, unsigned int> Bag;
   typedef std::shared_ptr<BagOfWord> Ptr;
 
   std::string name;
@@ -24,9 +24,33 @@ struct BagOfWord{
   }
 
   void print()const{
-    std::cout << name << " "
-              << uid << std::endl;
-    std::cout << nb_words() << std::endl;
+    {
+      Bag::iterator it = bag->begin();
+      std::cout << it->second;
+      ++it;
+      for(; it!=bag->end(); ++it) {
+        std::cout << " & " << it->second;
+      }
+      std::cout << " //" << std::endl;
+    }
+    {
+      Bag::iterator it = bag->begin();
+      std::cout << it->first.label;
+      ++it;
+      for(; it!=bag->end(); ++it) {
+        std::cout << " & " << it->first.label;
+      }
+      std::cout << " //" << std::endl;
+    }
+    {
+      Bag::iterator it = bag->begin();
+      std::cout << it->first.type;
+      ++it;
+      for(; it!=bag->end(); ++it) {
+        std::cout << " & " << it->first.type;
+      }
+      std::cout << " //" << std::endl;
+    }
   }
 
   int nb_words()const{return bag->size();}

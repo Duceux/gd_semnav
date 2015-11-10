@@ -1,6 +1,6 @@
 <launch>
-  <node name="full_reco" pkg="sn_tools" type="sn_tools_incremental_learning" output="screen" launch-prefix="gdb -ex run --args">
-  	<param name="source_dir" type="string" value="/home/robotic/Desktop/phd-dataset/sequence/" />
+  <node name="full_reco" pkg="sn_tools" type="sn_tools_graph_learning" output="screen">
+  	<param name="source_dir" type="string" value="/home/robotic/Desktop/new_phd_dataset/sequence/" />
   	<param name="saving" type="bool" value="false" />	
   </node>
 </launch>

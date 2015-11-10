@@ -56,6 +56,42 @@ Graph MaximumSpanningTree(const Graph& input, DistF func, bool sym=true){
   return output;
 }
 
+template <typename Graph, typename DistF>
+Graph MaximumOutEdgeGraph(const Graph& input, DistF func, unsigned int nb_out_edge = 1, double min_edge_sim = 0){
+  Graph output;
+
+  for(auto n1: input.get_nodes()){
+    output.insert(n1);
+    for(int k=0; k<nb_out_edge; ++k){
+      auto argb = input.get_nodes().begin();
+      double best = -1.0;
+      for(auto it=input.get_nodes().begin();
+          it!=input.get_nodes().end();
+          ++it)
+      {
+        auto& n2 = *it;
+        if(n1 == n2)
+          continue;
+        if(output.has(n1, n2))
+          continue;
+        double dist = func(n1, n2);
+        if(best < dist){
+          best = dist;
+          argb = it;
+        }
+      }
+      if(best>=min_edge_sim){
+        output.insert(*argb);
+        output.insert_edge(n1.key, argb->key, best);
+      }
+      else
+        break;
+    }
+  }
+
+  assert(output.nb_nodes() == input.nb_nodes());
+  return output;
+}
 
 }
 
